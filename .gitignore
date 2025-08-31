@@ -1,0 +1,17 @@
+# Node/React
+/frontend/node_modules/
+/frontend/build/
+
+# Spring Boot
+/backend/build/
+/backend/out/
+/backend/.gradle/
+
+# 런타임/볼륨/인증 산출물
+db/
+certbot/
+*.log
+
+# 환경/비밀
+/backend/src/main/resources/application.yml
+.env

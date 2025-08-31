@@ -1,0 +1,50 @@
+# HTTP (80) -> HTTPS (443) 리다이렉션 및 Let's Encrypt 인증 처리
+server {
+    listen 80;
+    server_name redidencial.cor-web.com;
+
+    # Let's Encrypt 인증서 갱신을 위한 경로
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    # 나머지 모든 HTTP 요청은 HTTPS로 영구 리다이렉트
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# HTTPS (443) 서버: 실제 서비스 제공
+server {
+    listen 443 ssl http2;
+    server_name redidencial.cor-web.com;
+
+    # SSL 인증서 경로 (Certbot이 생성할 파일)
+    ssl_certificate /etc/letsencrypt/live/redidencial.cor-web.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/redidencial.cor-web.com/privkey.pem;
+    
+    # 권장 SSL 보안 설정
+    #include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    # React 정적 파일 서빙
+    location / {
+        root /usr/share/nginx/html;
+        index index.html;
+        # SPA(Single Page Application) 라우팅 지원
+        try_files $uri $uri/ /index.html;
+
+        # 아래 두 줄 추가
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        expires 0;
+    }
+
+    # Spring Boot API 프록시
+    location /api/ {
+        proxy_pass http://backend:8080; # 'backend'는 Docker Compose의 서비스 이름
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

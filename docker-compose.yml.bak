@@ -1,0 +1,60 @@
+services:
+  # Spring Boot 백엔드 서비스
+  backend:
+    build:
+      context: ./backend
+    container_name: bolivia-backend
+    restart: unless-stopped
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}   # DB_USER -> MYSQL_USER
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD} # DB_PASSWORD -> MYSQL_PASSWORD
+      - APP_JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - db
+    networks:
+      - bolivia-network
+
+  # MySQL 데이터베이스 서비스
+  db:
+    image: mysql:8.0
+    container_name: bolivia-db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - bolivia-network
+
+  # Nginx 리버스 프록시 서비스
+  nginx:
+    build:
+      context: ./frontend # React 소스가 있는 frontend 폴더를 빌드 컨텍스트로 사용
+    container_name: bolivia-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./certbot/conf:/etc/letsencrypt #실제 경로로 수정
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - backend
+    networks:
+      - bolivia-network
+
+volumes:
+  db_data:
+  # certbot_conf:
+  # certbot_www:
+
+networks:
+  bolivia-network:
+    driver: bridge
+
