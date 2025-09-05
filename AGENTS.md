@@ -4,7 +4,7 @@
 - Spring Boot 3.2.x(Java 17) + React 기반 서비스를 안정적으로 개발·배포합니다.
 - 단일 도메인 `redidencial.cor-web.com` 뒤에서 Nginx 1.24.x 리버스 프록시로 노출합니다.
 - 환경별 설정은 `.env`/`application.yml` placeholder로 분리하고 Docker Compose로 일관되게 운영합니다.
-- 기술 스택: Gradle, axios, i18next, MySQL 8.0, Docker & Compose. Repo: https://github.com/hwhnee/Bolivia-app.git
+- 기술 스택: Gradle, axios, i18next, MySQL 8.0, Docker & Compose. Repo: https://github.com/hwhnee73-lab/bolivia-app-new.git
 
 ## 금지사항
 - 비밀값(키, 비밀번호, 토큰) 하드코딩 금지. 반드시 환경변수/Compose secrets 사용.
@@ -38,3 +38,8 @@
 
 ## 운영 승인 정책
 - 파일 I/O, 셸, Docker/Compose 명령은 승인 기반으로 수행.
+- 다음 작업은 수동 승인 필요:
+  - `docker compose up/down/build`
+  - MySQL 파괴적 변경(테이블 드롭/파티션 등)
+  - 외부 네트워크 호출 및 비밀키 생성
+- 규칙 위반 소지 시 즉시 중단하고 확인 요청.
