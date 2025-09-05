@@ -1,27 +1,12 @@
-services:
-  # Spring Boot 백엔드 서비스
-  backend:
-    build:
-      context: ./backend
-    container_name: bolivia-backend
-    restart: unless-stopped
-    environment:
-      # ⬇️ DB 접속 URL의 호스트명을 "db"로 명확히 수정했습니다.
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
-      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
-      - APP_JWT_SECRET=${JWT_SECRET}
-    depends_on:
-      - db
-    networks:
-      - bolivia-network
+version: '3.8'
 
+services:
   # MySQL 데이터베이스 서비스
   db:
     image: mysql:8.0
     container_name: bolivia-db
     restart: unless-stopped
-    ports: # ⬇️ 이 부분을 추가하여 외부에서 3306 포트로 DB에 접속할 수 있게 합니다.
+    ports:
       - "3306:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
@@ -33,21 +18,49 @@ services:
       - ./db/init:/docker-entrypoint-initdb.d:ro
     networks:
       - bolivia-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
-  # Nginx 리버스 프록시 서비스
-  nginx:
+  # Spring Boot 백엔드 서비스
+  backend:
     build:
-      context: ./frontend # React 소스가 있는 frontend 폴더를 빌드 컨텍스트로 사용
-    container_name: bolivia-nginx
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bolivia-backend
+    restart: unless-stopped
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+      - APP_JWT_SECRET=${JWT_SECRET}
+      - APP_JWT_COOKIE_DOMAIN=localhost
+      - APP_JWT_COOKIE_SECURE=false
+      - CORS_ALLOWED_ORIGINS=http://localhost,http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - bolivia-network
+    volumes:
+      - ./uploads:/app/uploads
+
+  # React + Nginx 프론트엔드 서비스
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: bolivia-frontend
     restart: unless-stopped
     ports:
       - "80:80"
-      # - "443:443" # ⬇️ 개발 환경에서는 SSL을 사용하지 않으므로 주석 처리합니다.
+      - "443:443"
+    environment:
+      - REACT_APP_API_URL=http://localhost/api
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      # ⬇️ 아래 3줄은 SSL 인증서 관련이므로 개발 환경에서는 주석 처리하거나 삭제합니다.
-      # - ./certbot/conf:/etc/letsencrypt
-      # - ./certbot/www:/var/www/certbot
     depends_on:
       - backend
     networks:
@@ -55,6 +68,7 @@ services:
 
 volumes:
   db_data:
+    driver: local
 
 networks:
   bolivia-network:

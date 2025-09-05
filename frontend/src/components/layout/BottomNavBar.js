@@ -1,38 +1,37 @@
-// (auto-concat)
 import React from 'react';
-import { useAppContext } from '../../contexts/AppContext';
+import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const BottomNavBar = () => {
-    const { persona, activeView, navigateTo } = useAppContext();
-    if (activeView === 'dashboard' || activeView === 'auth' || activeView === 'intro') return null;
+  const { t } = useTranslation();
 
-    const navItems = {
-        resident: [
-            { id: 'payment', icon: '💳', label: 'Pagos' },
-            { id: 'reservation', icon: '📅', label: 'Reservas' },
-            { id: 'maintenance', icon: '🔧', label: 'Reportes' },
-            { id: 'community', icon: '💬', label: 'Comunidad' },
-            { id: 'profile', icon: '⚙️', label: 'Ajustes' },
-        ],
-        admin: [
-            { id: 'user_management', icon: '👥', label: 'Usuarios' },
-            { id: 'resident_management', icon: '📋', label: 'Pagos' },
-            { id: 'task', icon: '🛠️', label: 'Mantenimiento' },
-            { id: 'reservation_approval', icon: '✅', label: 'Aprobar' },
-        ]
-    };
+  const navItems = [
+    { path: '/dashboard', label: t('nav.home'), icon: '🏠' },
+    { path: '/bills', label: t('nav.bills'), icon: '💰' },
+    { path: '/reservations', label: t('nav.reservations'), icon: '📅' },
+    { path: '/announcements', label: '공지', icon: '📢' },
+  ];
 
-    return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-2px_5px_rgba(0,0,0,0.1)] z-10">
-            <div className="container mx-auto flex justify-around">
-                {navItems[persona].map(item => (
-                    <button key={item.id} onClick={() => navigateTo(item.id)} className={`flex flex-col items-center justify-center p-2 w-full ${activeView === item.id ? 'text-teal-600' : 'text-gray-500'}`}>
-                        <span className="text-2xl">{item.icon}</span>
-                        <span className="text-xs mt-1">{item.label}</span>
-                    </button>
-                ))}
-            </div>
-        </div>
-    );
+  return (
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30">
+      <nav className="flex justify-around">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              `flex flex-col items-center py-2 px-3 text-xs ${
+                isActive ? 'text-primary-600' : 'text-gray-500'
+              }`
+            }
+          >
+            <span className="text-2xl mb-1">{item.icon}</span>
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+    </div>
+  );
 };
+
 export default BottomNavBar;
