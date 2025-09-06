@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.math.BigDecimal;
 
 @Service
 public class TaskAdminService {
@@ -57,6 +58,18 @@ public class TaskAdminService {
     public void deleteRequest(Long requestId) {
         String sql = "DELETE FROM maintenance_requests WHERE id = ?";
         jdbcTemplate.update(sql, requestId);
+    }
+
+    @Transactional
+    public void updateStatus(Long requestId, String feStatus) {
+        String sql = "UPDATE maintenance_requests SET status = ? WHERE id = ?";
+        jdbcTemplate.update(sql, mapStatusToKorean(feStatus), requestId);
+    }
+
+    @Transactional
+    public void updateCost(Long requestId, BigDecimal cost) {
+        String sql = "UPDATE maintenance_requests SET cost = ? WHERE id = ?";
+        jdbcTemplate.update(sql, cost, requestId);
     }
 
     private String mapStatusToSpanish(String dbStatus) {

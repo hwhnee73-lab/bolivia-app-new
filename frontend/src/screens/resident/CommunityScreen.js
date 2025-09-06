@@ -1,12 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { useAppContext } from '../../contexts/AppContext'; // La ruta puede variar
+import { useAppContext } from '../../contexts/AppContext';
+import { useTranslation } from 'react-i18next';
 import PhoneMockup from '../../components/common/PhoneMockup';
 import  Modal  from '../../components/common/Modal'; // La ruta puede variar
 import  HomeButton  from '../../components/common/HomeButton'; // La ruta puede variar
 
 const CommunityScreen = () => {
-    const { showToast, currentUser } = useAppContext();
+    const { showToast, currentUser, fetchWithAuth } = useAppContext();
+    const { t } = useTranslation();
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -21,10 +23,8 @@ const CommunityScreen = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/posts');
-            if (!response.ok) {
-                throw new Error('No se pudo cargar la lista de publicaciones.');
-            }
+            const response = await fetchWithAuth('/posts');
+            if (!response.ok) { throw new Error(t('community.errors.loadFailed')); }
             const data = await response.json();
             setPosts(data);
         } catch (err) {
@@ -46,22 +46,20 @@ const CommunityScreen = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('/api/posts', {
+            const response = await fetchWithAuth('/posts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
 
-            if (!response.ok) {
-                throw new Error('Falló el registro de la publicación.');
-            }
+            if (!response.ok) { throw new Error(t('community.errors.createFailed')); }
             
-            showToast("La publicación ha sido registrada.");
+            showToast(t('community.success.created'));
             setIsFormVisible(false);
             setFormData({ category: 'Foro Libre', title: '', content: '' });
             fetchPosts(); // Recargar la lista
         } catch (err) {
-            showToast(`Error: ${err.message}`);
+            showToast(t('common.errorWithMessage', { message: err.message }));
         }
     };
 
@@ -75,33 +73,33 @@ const CommunityScreen = () => {
             <PhoneMockup theme="light">
                 <div className="relative h-[650px] flex flex-col">
                     <HomeButton />
-                    <h3 className="text-xl font-bold text-center mb-4 flex-shrink-0">Comunidad</h3>
+                    <h3 className="text-xl font-bold text-center mb-4 flex-shrink-0">{t('community.title')}</h3>
                     
                     {!isFormVisible && (
                         <button onClick={() => setIsFormVisible(true)} className="w-full p-3 rounded-lg bg-teal-600 text-white font-bold hover:bg-teal-700 mb-4">
-                            + Crear Nueva Publicación
+                            {t('community.actions.newPostPlus')}
                         </button>
                     )}
 
                     {isFormVisible && (
                         <form onSubmit={handleSubmit} className="bg-white p-3 rounded-lg shadow mb-4 space-y-3">
-                            <h4 className="font-semibold">Nueva Publicación</h4>
+                            <h4 className="font-semibold">{t('community.form.newTitle')}</h4>
                             <select name="category" value={formData.category} onChange={handleInputChange} className="w-full p-2 border rounded text-sm">
                                 <option value="Foro Libre">Foro Libre</option>
                                 <option value="Mercado">Mercado</option>
                             </select>
-                            <input name="title" value={formData.title} onChange={handleInputChange} placeholder="Título" className="w-full p-2 border rounded text-sm" required />
-                            <textarea name="content" value={formData.content} onChange={handleInputChange} rows="3" placeholder="Escriba el contenido aquí." className="w-full p-2 border rounded text-sm" required></textarea>
+                            <input name="title" value={formData.title} onChange={handleInputChange} placeholder={t('community.form.titlePlaceholder')} className="w-full p-2 border rounded text-sm" required />
+                            <textarea name="content" value={formData.content} onChange={handleInputChange} rows="3" placeholder={t('community.form.contentPlaceholder')} className="w-full p-2 border rounded text-sm" required></textarea>
                             <div className="flex gap-2">
-                                <button type="submit" className="w-full bg-teal-600 text-white p-2 rounded text-sm hover:bg-teal-700">Publicar</button>
-                                <button type="button" onClick={() => setIsFormVisible(false)} className="w-full bg-gray-300 text-gray-800 p-2 rounded text-sm hover:bg-gray-400">Cancelar</button>
+                                <button type="submit" className="w-full bg-teal-600 text-white p-2 rounded text-sm hover:bg-teal-700">{t('community.actions.publish')}</button>
+                                <button type="button" onClick={() => setIsFormVisible(false)} className="w-full bg-gray-300 text-gray-800 p-2 rounded text-sm hover:bg-gray-400">{t('common.cancel')}</button>
                             </div>
                         </form>
                     )}
 
                     <div className="flex-grow overflow-y-auto space-y-2">
-                        <h4 className="font-semibold mb-2">Lista de Publicaciones</h4>
-                        {isLoading && <p className="text-center">Cargando...</p>}
+                        <h4 className="font-semibold mb-2">{t('community.list.title')}</h4>
+                        {isLoading && <p className="text-center">{t('common.loading')}</p>}
                         {error && <p className="text-center text-red-500">{error}</p>}
                         {!isLoading && !error && posts.map(post => (
                             <div key={post.id} onClick={() => openPostModal(post)} className="bg-white p-3 rounded-lg shadow cursor-pointer">
@@ -110,7 +108,7 @@ const CommunityScreen = () => {
                                     <span className="text-xs text-gray-400">{new Date(post.created_at).toLocaleDateString()}</span>
                                 </div>
                                 <p className="font-bold text-sm mt-2 truncate">{post.title}</p>
-                                <p className="text-xs text-gray-500 mt-1">Autor: {post.author_name}</p>
+                                <p className="text-xs text-gray-500 mt-1">{t('community.list.author')}: {post.author_name}</p>
                             </div>
                         ))}
                     </div>
@@ -119,7 +117,7 @@ const CommunityScreen = () => {
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={selectedPost?.title}>
                 <div className="space-y-4">
                     <div className="text-sm text-gray-500">
-                        <span>Categoría: {selectedPost?.category}</span> | <span>Autor: {selectedPost?.author_name}</span>
+                        <span>{t('community.list.category')}: {selectedPost?.category}</span> | <span>{t('community.list.author')}: {selectedPost?.author_name}</span>
                     </div>
                     <p className="text-gray-700 whitespace-pre-wrap">{selectedPost?.content}</p>
                 </div>

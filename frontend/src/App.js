@@ -1,5 +1,6 @@
 // (auto-concat)
-import React from 'react';
+
+import './i18n';
 import { AppProvider, useAppContext } from './contexts/AppContext';
 // Layout Components
 import Header from './components/layout/Header';
@@ -24,8 +25,10 @@ import ResidentManagementScreen from './screens/admin/ResidentManagementScreen';
 import UserManagementScreen from './screens/admin/UserManagementScreen';
 import FinanceScreen from './screens/admin/FinanceScreen';
 import TaskScreen from './screens/admin/TaskScreen';
-import ReservationApprovalScreen from './screens/admin/ReservationApprovalScreen';
+
+import BillingBatchWizard from './screens/admin/BillingBatchWizard';
 import CommunicationScreen from './screens/admin/CommunicationScreen';
+import ReservationApprovalScreen from './screens/admin/ReservationApprovalScreen';
 
 // --- /src/App.js ---
 // El componente principal de la aplicación se encarga de renderizar la pantalla.
@@ -60,6 +63,7 @@ const AppContent = () => {
                 case 'user_management': return <UserManagementScreen />;
                 case 'resident_management': return <ResidentManagementScreen />;
                 case 'finance': return <FinanceScreen />;
+                case 'billing_batch': return <BillingBatchWizard />;
                 case 'task': return <TaskScreen />;
                 case 'reservation_approval': return <ReservationApprovalScreen />;
                 case 'communication': return <CommunicationScreen />;
@@ -89,3 +93,5 @@ export default function App() {
         </AppProvider>
     );
 }
+
+

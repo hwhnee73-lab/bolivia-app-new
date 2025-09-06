@@ -1,44 +1,37 @@
 package com.example.bolivia.controller;
 
 import com.example.bolivia.dto.MaintenanceDto;
+import com.example.bolivia.repository.UserRepository;
 import com.example.bolivia.service.MaintenanceService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/resident/tasks")
 public class MaintenanceController {
 
     private final MaintenanceService maintenanceService;
+    private final UserRepository userRepository;
 
-    public MaintenanceController(MaintenanceService maintenanceService) {
+    public MaintenanceController(MaintenanceService maintenanceService, UserRepository userRepository) {
         this.maintenanceService = maintenanceService;
+        this.userRepository = userRepository;
     }
 
-    // API para obtener la lista de solicitudes de mantenimiento del usuario actual
-    @GetMapping("/maintenance-requests")
-    public ResponseEntity<List<MaintenanceDto.RequestInfo>> getUserRequests() {
-        // En un entorno real, el ID del usuario se obtendría del contexto de seguridad de Spring
-        Long currentUserId = 1L; // Usamos 1 como ID de usuario para pruebas
-
-        List<MaintenanceDto.RequestInfo> requests = maintenanceService.getRequestsForUser(currentUserId);
-        return ResponseEntity.ok(requests);
+    // 내 신고 목록/상태 조회
+    @GetMapping
+    public ResponseEntity<List<MaintenanceDto.TaskDetail>> myTasks(@com.example.bolivia.security.CurrentUserId Long uid) {
+        return ResponseEntity.ok(maintenanceService.listMyTasks(uid));
     }
 
-    // API para registrar una nueva solicitud de mantenimiento
-    @PostMapping("/maintenance-requests")
-    public ResponseEntity<?> createRequest(@RequestBody MaintenanceDto.CreateRequest request) {
-        // En un entorno real, el ID del usuario se obtendría del contexto de seguridad
-        Long currentUserId = 1L; // Usamos 1 como ID de usuario para pruebas
-
-        try {
-            maintenanceService.createRequest(currentUserId, request);
-            return ResponseEntity.ok(Map.of("message", "La solicitud de mantenimiento se ha recibido correctamente."));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("message", "Ocurrió un error al registrar la solicitud."));
-        }
+    // 신고 생성
+    @PostMapping
+    public ResponseEntity<?> create(@RequestBody MaintenanceDto.CreateRequest req, @com.example.bolivia.security.CurrentUserId Long uid) {
+        maintenanceService.createTask(uid, req);
+        return ResponseEntity.ok().build();
     }
 }

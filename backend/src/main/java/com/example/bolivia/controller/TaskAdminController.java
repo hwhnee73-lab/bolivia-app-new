@@ -52,4 +52,16 @@ public class TaskAdminController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody TaskAdminDto.StatusUpdate body) {
+        taskAdminService.updateStatus(id, body.getStatus());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/cost")
+    public ResponseEntity<?> updateCost(@PathVariable Long id, @RequestBody TaskAdminDto.CostUpdate body) {
+        taskAdminService.updateCost(id, body.getCost());
+        return ResponseEntity.noContent().build();
+    }
 }

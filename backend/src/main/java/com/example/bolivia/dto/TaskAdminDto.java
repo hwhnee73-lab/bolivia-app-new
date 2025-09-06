@@ -30,4 +30,14 @@ public class TaskAdminDto {
         private String description;
         private String status;
     }
+
+    @Getter @Setter @NoArgsConstructor
+    public static class StatusUpdate {
+        private String status; // Recibido | En Proceso | Completado | En Espera
+    }
+
+    @Getter @Setter @NoArgsConstructor
+    public static class CostUpdate {
+        private java.math.BigDecimal cost; // 확정 비용
+    }
 }

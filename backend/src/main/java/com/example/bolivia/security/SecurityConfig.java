@@ -1,8 +1,16 @@
 package com.example.bolivia.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,13 +22,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.http.HttpStatus;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-// [추가] SLF4J 로거 임포트
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.io.IOException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,79 +33,104 @@ import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor // final 필드에 대한 생성자를 자동으로 생성
+@RequiredArgsConstructor
 @EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final ObjectMapper objectMapper = new ObjectMapper(); // JSON 응답 생성을 위해 추가
-
-    // [추가] Logger 인스턴스 생성
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
-    // PasswordEncoder를 Bean으로 등록하여 암호화 방식을 일관되게 관리
+    // [추가] 요청 로깅을 위한 커스텀 필터 정의
+    private static class RequestLoggingFilter extends OncePerRequestFilter {
+        private static final Logger log = LoggerFactory.getLogger(RequestLoggingFilter.class);
+
+        @Override
+        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+            // --- 요청 로깅 시작 ---
+            long startTime = System.currentTimeMillis();
+            StringBuilder headers = new StringBuilder();
+            Enumeration<String> headerNames = request.getHeaderNames();
+            while (headerNames.hasMoreElements()) {
+                String headerName = headerNames.nextElement();
+                // Authorization 헤더는 민감할 수 있으므로 존재 여부만 로깅
+                if ("authorization".equalsIgnoreCase(headerName)) {
+                    headers.append(String.format("Authorization: %s ", (request.getHeader(headerName) != null ? "Present" : "Not Present")));
+                } else {
+                    headers.append(String.format("%s: %s ", headerName, request.getHeader(headerName)));
+                }
+            }
+            log.info(">>> REQUEST [{} {}] from {} - Headers: [{}]",
+                    request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), headers.toString().trim());
+            // --- 요청 로깅 끝 ---
+
+            filterChain.doFilter(request, response);
+
+            // --- 응답 로깅 시작 ---
+            long duration = System.currentTimeMillis() - startTime;
+            log.info("<<< RESPONSE [{} {}] - Status: {} ({}ms)",
+                    request.getMethod(), request.getRequestURI(), response.getStatus(), duration);
+            // --- 응답 로깅 끝 ---
+        }
+    }
+
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // HTTP 보안 설정을 위한 SecurityFilterChain을 Bean으로 등록
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // [추가] 보안 설정 시작 로그
         logger.info(">>> [SecurityConfig] Configuring Security Filter Chain...");
         http
-            // CORS 설정 추가
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // CSRF 보호 기능 비활성화 (JWT 사용 시 일반적으로 비활성화)
-            .csrf(csrf -> csrf.disable())
-            // HTTP 기본 인증 비활성화
-            .httpBasic(httpBasic -> httpBasic.disable())
-            // 세션을 사용하지 않으므로 STATELESS로 설정
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // 각 요청에 대한 접근 권한 설정
-            .authorizeHttpRequests(authz -> authz
-                // "/api/auth/**" 경로는 누구나 접근 허용
-                .requestMatchers("/auth/**").permitAll()
-                // "/api/admin/**" 경로는 ADMIN 권한을 가진 사용자만 접근 허용
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                // 위 경로를 제외한 모든 요청은 인증된 사용자만 접근 허용
-                .anyRequest().authenticated()
-            )
-            // 직접 구현한 JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 앞에 추가
-            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
-            // 예외 처리 핸들러 설정
-            .exceptionHandling(exception -> exception
-                // 인증되지 않은 사용자가 보호된 리소스에 접근 시 401 Unauthorized 응답
-                .authenticationEntryPoint((request, response, authException) -> {
-                    // [추가] 인증 실패 로그
-                    logger.warn("!!! [SecurityConfig] Unauthorized access attempt to {}: {}", request.getRequestURI(), authException.getMessage());
-                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                    response.setContentType("application/json;charset=UTF-8");
-                    Map<String, Object> body = new HashMap<>();
-                    body.put("status", HttpStatus.UNAUTHORIZED.value());
-                    body.put("message", "인증이 필요합니다.");
-                    response.getWriter().write(objectMapper.writeValueAsString(body));
-                })
-                // 인증은 되었으나 권한이 없는 사용자가 접근 시 403 Forbidden 응답
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    // [추가] 인가 실패 로그
-                    String username = request.getUserPrincipal() != null ? request.getUserPrincipal().getName() : "anonymous";
-                    logger.warn("!!! [SecurityConfig] Forbidden access attempt by user '{}' to {}: {}", username, request.getRequestURI(), accessDeniedException.getMessage());
-                    response.setStatus(HttpStatus.FORBIDDEN.value());
-                    response.setContentType("application/json;charset=UTF-8");
-                    Map<String, Object> body = new HashMap<>();
-                    body.put("status", HttpStatus.FORBIDDEN.value());
-                    body.put("message", "접근 권한이 없습니다.");
-                    response.getWriter().write(objectMapper.writeValueAsString(body));
-                })
-            );
-        // [추가] 보안 설정 완료 로그
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**", "/oauth2/authorization/**").permitAll()
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/resident/**").hasAuthority("RESIDENT")
+                        .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth -> oauth.successHandler(oAuth2SuccessHandler))
+                // [수정] JwtAuthenticationFilter 앞에 새로운 요청 로깅 필터를 추가하여 모든 요청을 먼저 기록
+                .addFilterBefore(new RequestLoggingFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            // [수정] 인증 실패 로그 강화 (클라이언트 IP, 요청 메서드/URI, 에러 메시지)
+                            logger.warn("!!! AUTHENTICATION FAILED (401) for request [{} {}] from {}: {}",
+                                    request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), authException.getMessage());
+                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            response.setContentType("application/json;charset=UTF-8");
+                            Map<String, Object> body = new HashMap<>();
+                            body.put("status", HttpStatus.UNAUTHORIZED.value());
+                            body.put("error", "Unauthorized");
+                            body.put("message", "인증이 필요합니다.");
+                            response.getWriter().write(objectMapper.writeValueAsString(body));
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            // [수정] 인가 실패 로그 강화 (사용자명, 클라이언트 IP, 요청 메서드/URI, 에러 메시지)
+                            String username = request.getUserPrincipal() != null ? request.getUserPrincipal().getName() : "anonymous";
+                            logger.warn("!!! ACCESS DENIED (403) for user '{}' on request [{} {}] from {}: {}",
+                                    username, request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), accessDeniedException.getMessage());
+                            response.setStatus(HttpStatus.FORBIDDEN.value());
+                            response.setContentType("application/json;charset=UTF-8");
+                            Map<String, Object> body = new HashMap<>();
+                            body.put("status", HttpStatus.FORBIDDEN.value());
+                            body.put("error", "Forbidden");
+                            body.put("message", "접근 권한이 없습니다.");
+                            response.getWriter().write(objectMapper.writeValueAsString(body));
+                        })
+                );
         logger.info("<<< [SecurityConfig] Security Filter Chain configuration complete.");
         return http.build();
     }
-    
-    // CORS 설정을 위한 Bean 추가
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -111,7 +141,6 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        // [추가] CORS 설정 로그
         logger.info(">>> [SecurityConfig] CORS configuration initialized for origins: {}", config.getAllowedOrigins());
         return source;
     }

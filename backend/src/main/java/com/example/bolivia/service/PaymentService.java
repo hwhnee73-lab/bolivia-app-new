@@ -96,4 +96,80 @@ public class PaymentService {
             default: return dbStatus;
         }
     }
+
+    // Historial de pagos del usuario actual
+    public java.util.List<com.example.bolivia.dto.BillDto.PaymentInfo> getPaymentHistory(Long userId) {
+        String sql = "SELECT id, bill_id, amount, payment_method, payment_date FROM payments WHERE user_id = ? ORDER BY payment_date DESC";
+        return jdbcTemplate.query(sql, (rs, rn) -> new com.example.bolivia.dto.BillDto.PaymentInfo(
+                rs.getLong("id"),
+                rs.getLong("bill_id"),
+                rs.getBigDecimal("amount"),
+                rs.getString("payment_method"),
+                rs.getTimestamp("payment_date").toLocalDateTime()
+        ), userId);
+    }
+
+    // PDF de recibo (muestra)
+    public byte[] generateReceiptPdf(Long userId, Long paymentId) {
+        String checkSql = "SELECT p.id, p.amount, p.payment_method, p.payment_date, b.bill_month, h.building_number, h.unit_number " +
+                "FROM payments p JOIN bills b ON p.bill_id = b.id JOIN users u ON p.user_id = u.id " +
+                "LEFT JOIN households h ON u.household_id = h.id WHERE p.id = ? AND p.user_id = ?";
+        java.util.Map<String, Object> row = jdbcTemplate.queryForMap(checkSql, paymentId, userId);
+        try {
+            com.lowagie.text.Document doc = new com.lowagie.text.Document(com.lowagie.text.PageSize.A6);
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            com.lowagie.text.pdf.PdfWriter.getInstance(doc, baos);
+            doc.open();
+
+            com.lowagie.text.pdf.BaseFont base = loadKoreanBaseFont();
+            com.lowagie.text.Font title = new com.lowagie.text.Font(base, 14, com.lowagie.text.Font.BOLD);
+            com.lowagie.text.Font body = new com.lowagie.text.Font(base, 10, com.lowagie.text.Font.NORMAL);
+
+            doc.add(new com.lowagie.text.Paragraph("관리비영수증 (Receipt)", title));
+            doc.add(new com.lowagie.text.Paragraph("세대: " + row.get("building_number") + "-" + row.get("unit_number"), body));
+            doc.add(new com.lowagie.text.Paragraph("청구월: " + row.get("bill_month"), body));
+            doc.add(new com.lowagie.text.Paragraph("결제금액: " + row.get("amount"), body));
+            doc.add(new com.lowagie.text.Paragraph("결제수단: " + row.get("payment_method"), body));
+            doc.add(new com.lowagie.text.Paragraph("결제일: " + row.get("payment_date"), body));
+            doc.close();
+            return baos.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Receipt PDF generation failed: " + e.getMessage(), e);
+        }
+    }
+
+    // Load a Unicode-capable Korean font from classpath and embed it into PDF
+    private com.lowagie.text.pdf.BaseFont loadKoreanBaseFont() {
+        final String[] candidates = new String[] {
+                "fonts/NotoSansCJKkr-Regular.otf",
+                "fonts/NotoSansCJKkr-Regular.ttf",
+                "fonts/NotoSansKR-Regular.otf",
+                "fonts/NotoSansKR-Regular.ttf"
+        };
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        if (cl == null) cl = this.getClass().getClassLoader();
+        for (String path : candidates) {
+            try (java.io.InputStream in = cl.getResourceAsStream(path)) {
+                if (in == null) continue;
+                byte[] fontBytes = in.readAllBytes();
+                // Identity-H for full Unicode; embed the font
+                return com.lowagie.text.pdf.BaseFont.createFont(
+                        path, com.lowagie.text.pdf.BaseFont.IDENTITY_H, com.lowagie.text.pdf.BaseFont.EMBEDDED,
+                        false, fontBytes, null
+                );
+            } catch (Exception ignore) {
+                // try next candidate
+            }
+        }
+        try {
+            // Fallback to a built-in font (may not render Korean correctly)
+            return com.lowagie.text.pdf.BaseFont.createFont(
+                    com.lowagie.text.pdf.BaseFont.HELVETICA,
+                    com.lowagie.text.pdf.BaseFont.WINANSI,
+                    false
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load any PDF font", e);
+        }
+    }
 }

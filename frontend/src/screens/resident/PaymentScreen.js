@@ -1,136 +1,140 @@
-
 import React, { useState, useEffect } from 'react';
-import { useAppContext } from '../../contexts/AppContext'; // La ruta puede variar
+import { useAppContext } from '../../contexts/AppContext';
+import { useTranslation } from 'react-i18next';
 import PhoneMockup from '../../components/common/PhoneMockup';
-import Modal  from '../../components/common/Modal'; // La ruta puede variar
-import HomeButton from '../../components/common/HomeButton'; // La ruta puede variar
+import Modal  from '../../components/common/Modal';
+import HomeButton from '../../components/common/HomeButton';
+import Loader from '../../components/common/Loader';
+import ErrorAlert from '../../components/common/ErrorAlert';
 
 const PaymentScreen = () => {
-    const { showToast } = useAppContext();
-    const [bills, setBills] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-    
-    const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-    const [selectedBill, setSelectedBill] = useState(null);
-    const [payingBillId, setPayingBillId] = useState(null);
+  const { showToast, fetchWithAuth } = useAppContext();
+  const { t } = useTranslation();
+  const [bills, setBills] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [currentBill, setCurrentBill] = useState(null);
 
-    // Al cargar el componente, se obtiene la lista de facturas desde la API
-    useEffect(() => {
-        const fetchBills = async () => {
-            try {
-                // Llamada a la API del backend a través del proxy de Nginx
-                const response = await fetch('/api/bills');
-                if (!response.ok) {
-                    throw new Error('No se pudo cargar la información de las facturas.');
-                }
-                const data = await response.json();
-                setBills(data);
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchBills();
-    }, []);
-
-    const toggleBillDetails = (billId) => {
-        setSelectedBill(selectedBill === billId ? null : billId);
-    };
-
-    // Manejador para procesar el pago con QR
-    const handlePayment = async () => {
-        setIsQrModalOpen(false);
-        showToast("Procesando el pago...");
-
-        try {
-            const response = await fetch('/api/payments', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ billId: payingBillId })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'El pago falló.');
-            }
-            
-            // Si el pago es exitoso, actualiza el estado de la factura en la UI a 'Pagado'
-            setBills(prevBills => 
-                prevBills.map(bill => 
-                    bill.id === payingBillId ? { ...bill, status: 'Pagado' } : bill
-                )
-            );
-            showToast("¡Pago completado con éxito!");
-
-        } catch (err) {
-            showToast(`Error: ${err.message}`);
-        } finally {
-            setPayingBillId(null);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true); setError('');
+        const res = await fetchWithAuth('/resident/payments/bills');
+        if (!res.ok) {
+          const data = await res.json().catch(()=>({}));
+          throw new Error(data.message || t('payment.errors.loadBillsFailed'));
         }
+        const data = await res.json();
+        setBills(data);
+      } catch (e) {
+        setError(e.message);
+      } finally { setLoading(false); }
     };
-    
-    const openQrModal = (billId) => {
-        setPayingBillId(billId);
-        setIsQrModalOpen(true);
-    };
+    load();
+  }, [fetchWithAuth]);
 
-    if (isLoading) {
-        return <PhoneMockup theme="light"><div className="text-center p-10">Cargando...</div></PhoneMockup>;
-    }
-    
-    if (error) {
-        return <PhoneMockup theme="light"><div className="text-center p-10 text-red-500">Error: {error}</div></PhoneMockup>;
-    }
+  const openDetail = (bill) => { setCurrentBill(bill); setDetailOpen(true); };
 
-    return (
-        <>
-            <PhoneMockup theme="light">
-                <div className="relative h-full flex flex-col">
-                    <HomeButton />
-                    <h3 className="text-xl font-bold text-center mb-4">Pagos y Facturación</h3>
-                    <div className="space-y-3 overflow-y-auto flex-grow">
-                        {bills.map(bill => (
-                            <div key={bill.id} className="bg-white rounded-lg shadow p-3 cursor-pointer" onClick={() => toggleBillDetails(bill.id)}>
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <p className="font-bold">Cuotas de {bill.bill_month}</p>
-                                        <p className="text-sm text-gray-500">Fecha de vencimiento: {bill.due_date}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className={`font-bold ${bill.status === 'Pendiente' ? 'text-red-500' : 'text-green-500'}`}>{bill.status}</p>
-                                        <p className="text-sm">{Number(bill.total_amount).toLocaleString()} $</p>
-                                    </div>
-                                </div>
-                                {selectedBill === bill.id && (
-                                    <div className="mt-3 pt-3 border-t border-gray-200 space-y-1 text-xs">
-                                        <h4 className="font-semibold mb-1">Detalles</h4>
-                                        {bill.items.map(item => (
-                                            <div key={item.item_name} className="flex justify-between">
-                                                <span>{item.item_name}</span>
-                                                <span>{Number(item.amount).toLocaleString()} $</span>
-                                            </div>
-                                        ))}
-                                        {bill.status === 'Pendiente' && (
-                                            <button onClick={(e) => { e.stopPropagation(); openQrModal(bill.id); }} className="w-full mt-3 p-2 rounded bg-teal-600 text-white hover:bg-teal-700 font-bold text-sm transition-colors">
-                                                Pagar con Código QR
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+  const payMock = () => {
+    if (!currentBill) return;
+    // Mock: 변경만 UI에 반영
+    setBills(prev => prev.map(b => b.id === currentBill.id ? { ...b, status: 'Pagado' } : b));
+    setCurrentBill({ ...currentBill, status: 'Pagado' });
+    setDetailOpen(false);
+    showToast(t('payment.success.mockPaid'));
+  };
+
+  const downloadReceipt = (bill) => {
+    const b = bill || currentBill;
+    if (!b) return;
+    const html = `<!doctype html><html><head><meta charset="utf-8"><style>
+      body{font-family:Arial;padding:20px}h2{margin:0 0 10px}table{width:100%;border-collapse:collapse;margin-top:10px}
+      th,td{border:1px solid #ddd;padding:6px;text-align:right}th{text-align:left;background:#f3f4f6}
+    </style></head><body>
+      <h2>영수증 (샘플)</h2>
+      <p>청구월: ${b.bill_month}</p>
+      <p>상태: ${b.status}</p>
+      <table><thead><tr><th>항목</th><th>금액</th></tr></thead><tbody>
+        ${(b.items||[]).map(it=>`<tr><td style="text-align:left">${it.item_name}</td><td>${Number(it.amount||0).toLocaleString()}</td></tr>`).join('')}
+        <tr><td style="text-align:left"><strong>합계</strong></td><td><strong>${Number(b.total_amount||0).toLocaleString()}</strong></td></tr>
+      </tbody></table>
+      <script>window.onload=function(){window.print();window.close();}</script>
+    </body></html>`;
+    const w = window.open('', 'receipt');
+    if (!w) return;
+    w.document.open(); w.document.write(html); w.document.close();
+  };
+
+  if (loading) return <PhoneMockup theme="light"><Loader message={t('payment.loadingBills')} /></PhoneMockup>;
+  if (error) return <PhoneMockup theme="light"><div className="p-6"><ErrorAlert message={t('common.errorWithMessage', { message: error })} /></div></PhoneMockup>;
+
+  // Group by month
+  const months = Array.from(new Set(bills.map(b=>b.bill_month))).sort().reverse();
+
+  return (
+    <>
+      <PhoneMockup theme="light">
+        <div className="relative h-full flex flex-col">
+          <HomeButton />
+          <h3 className="text-xl font-bold text-center mb-4">{t('payment.title')}</h3>
+          <div className="space-y-4 overflow-y-auto flex-grow">
+            {months.map(m => (
+              <div key={m} className="bg-white rounded-lg shadow p-3">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="font-bold">{m}</div>
                 </div>
-            </PhoneMockup>
-            <Modal isOpen={isQrModalOpen} onClose={() => setIsQrModalOpen(false)} title="Pago con Código QR">
-                <p className="text-center">Escanee el código QR para pagar las cuotas de mantenimiento.</p>
-                <img src="https://placehold.co/300x300/ffffff/000000?text=Código+QR+de+Pago" alt="Payment QR Code" className="mx-auto mt-4 rounded-lg" />
-                <button onClick={handlePayment} className="w-full mt-4 p-2 rounded bg-teal-600 text-white hover:bg-teal-700 font-bold">Confirmar Pago (Simulación)</button>
-            </Modal>
-        </>
-    );
+                {(bills.filter(b=>b.bill_month===m)).map(bill => (
+                  <div key={bill.id} className="flex justify-between items-center border-t py-2">
+                    <div>
+                      <div className="text-sm text-gray-600">{t('payment.due')}: {bill.due_date}</div>
+                      <div className={`text-xs font-semibold ${bill.status==='Pendiente'?'text-red-600':'text-green-600'}`}>{bill.status}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold">{Number(bill.total_amount||0).toLocaleString()} $</div>
+                      <div className="mt-1 flex gap-2 justify-end">
+                        <button onClick={()=>openDetail(bill)} className="px-2 py-1 text-xs rounded bg-gray-200 hover:bg-gray-300">{t('payment.actions.detail')}</button>
+                        {bill.status!=='Pendiente' && (
+                          <button onClick={()=>downloadReceipt(bill)} className="px-2 py-1 text-xs rounded bg-sky-600 text-white hover:bg-sky-700">{t('payment.actions.receipt')}</button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </PhoneMockup>
+
+      <Modal isOpen={detailOpen} onClose={()=>setDetailOpen(false)} title={t('payment.detailTitle')}>
+        {currentBill && (
+          <div>
+            <div className="flex justify-between mb-2 text-sm">
+              <div>{t('payment.table.month')}: {currentBill.bill_month}</div>
+              <div>{t('payment.table.status')}: <span className={currentBill.status==='Pendiente'?'text-red-600':'text-green-600'}>{currentBill.status}</span></div>
+            </div>
+            <div className="border rounded overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-100"><tr><th className="p-2 text-left">{t('payment.table.item')}</th><th className="p-2 text-right">{t('payment.table.amount')}</th></tr></thead>
+                <tbody>
+                  {(currentBill.items||[]).map((it,idx)=> (
+                    <tr key={idx} className="border-t"><td className="p-2">{it.item_name}</td><td className="p-2 text-right">{Number(it.amount||0).toLocaleString()}</td></tr>
+                  ))}
+                  <tr className="border-t font-semibold"><td className="p-2">{t('payment.table.total')}</td><td className="p-2 text-right">{Number(currentBill.total_amount||0).toLocaleString()}</td></tr>
+                </tbody>
+              </table>
+            </div>
+            {currentBill.status==='Pendiente' ? (
+              <button onClick={payMock} className="w-full mt-3 p-2 rounded bg-teal-600 text-white hover:bg-teal-700 font-bold">{t('payment.actions.mockPay')}</button>
+            ) : (
+              <button onClick={()=>downloadReceipt()} className="w-full mt-3 p-2 rounded bg-sky-600 text-white hover:bg-sky-700 font-bold">{t('payment.actions.receiptPdf')}</button>
+            )}
+          </div>
+        )}
+      </Modal>
+    </>
+  );
 };
 
 export default PaymentScreen;

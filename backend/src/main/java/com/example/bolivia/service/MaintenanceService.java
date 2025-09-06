@@ -3,6 +3,7 @@ package com.example.bolivia.service;
 import com.example.bolivia.dto.MaintenanceDto;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,71 +16,57 @@ public class MaintenanceService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    // Método para obtener la lista de solicitudes de un usuario específico
-    public List<MaintenanceDto.RequestInfo> getRequestsForUser(Long requesterId) {
-        String sql = "SELECT id, category, description, status, created_at " +
-                     "FROM maintenance_requests " +
-                     "WHERE requester_id = ? " +
-                     "ORDER BY created_at DESC";
-
-        return jdbcTemplate.query(sql, (rs, rowNum) -> new MaintenanceDto.RequestInfo(
+    // 내 신고 목록/상태 조회
+    public List<MaintenanceDto.TaskDetail> listMyTasks(Long userId) {
+        String sql = "SELECT id, category, description, status, created_at, completed_at " +
+                "FROM maintenance_requests WHERE requester_id = ? ORDER BY created_at DESC";
+        return jdbcTemplate.query(sql, (rs, rn) -> new MaintenanceDto.TaskDetail(
                 rs.getLong("id"),
-                mapCategoryToSpanish(rs.getString("category")), // Mapear categoría a español
+                mapCategoryToSpanish(rs.getString("category")),
                 rs.getString("description"),
-                mapStatusToSpanish(rs.getString("status")), // Mapear estado a español
-                rs.getTimestamp("created_at").toLocalDateTime()
-        ), requesterId);
+                mapStatusToSpanish(rs.getString("status")),
+                rs.getTimestamp("created_at").toLocalDateTime(),
+                rs.getTimestamp("completed_at") != null ? rs.getTimestamp("completed_at").toLocalDateTime() : null
+        ), userId);
     }
 
-    // Método para crear una nueva solicitud de mantenimiento
-    public void createRequest(Long requesterId, MaintenanceDto.CreateRequest requestDto) {
-        String sql = "INSERT INTO maintenance_requests (requester_id, category, description, status, created_at, updated_at) " +
-                     "VALUES (?, ?, ?, '접수됨', NOW(), NOW())";
-        
-        jdbcTemplate.update(sql, requesterId, mapCategoryToKorean(requestDto.getCategory()), requestDto.getDescription());
-    }
-
-    // Mapea el estado del ENUM de la BD (en coreano) al español para el frontend
-    private String mapStatusToSpanish(String dbStatus) {
-        switch (dbStatus) {
-            case "접수됨": return "Recibido";
-            case "처리중": return "En Proceso";
-            case "완료됨": return "Completado";
-            case "보류": return "En Espera";
-            default: return dbStatus;
+    // 신고 생성
+    @Transactional
+    public void createTask(Long userId, MaintenanceDto.CreateRequest req) {
+        if (req.getDescription() == null || req.getDescription().isBlank()) {
+            throw new IllegalArgumentException("description is required");
         }
+        String categoryKo = mapCategoryToKorean(req.getCategory());
+        String sql = "INSERT INTO maintenance_requests (requester_id, category, description, status, created_at, updated_at) " +
+                "VALUES (?, ?, ?, '접수', NOW(), NOW())";
+        jdbcTemplate.update(sql, userId, categoryKo, req.getDescription());
     }
-    
-    // Mapea la categoría del frontend (en español) al coreano para la BD
+
+    private String mapStatusToSpanish(String dbStatus) {
+        if (dbStatus == null) return null;
+        if (dbStatus.contains("접수")) return "Recibido";
+        if (dbStatus.contains("처리")) return "En Proceso";
+        if (dbStatus.contains("완료")) return "Completado";
+        if (dbStatus.contains("보류")) return "En Espera";
+        return dbStatus;
+    }
+
+    private String mapCategoryToSpanish(String dbCategory) {
+        if (dbCategory == null) return null;
+        if (dbCategory.contains("배") || dbCategory.contains("관")) return "Plomería";
+        if (dbCategory.contains("전기")) return "Electricidad";
+        if (dbCategory.contains("설")) return "Instalación";
+        return "Otro";
+    }
+
     private String mapCategoryToKorean(String feCategory) {
+        if (feCategory == null) return "기타";
         switch (feCategory) {
             case "Plomería": return "배관";
             case "Electricidad": return "전기";
-            case "Instalación": return "시설";
-            case "Otro": return "기타";
-            default: return feCategory;
+            case "Instalación": return "설치";
+            default: return feCategory; // 이미 한글이면 그대로 저장
         }
     }
-
-    /**
-     * 카테고리 문자열을 스페인어로 변환합니다.
-     * @param category DB에서 가져온 카테고리 값
-     * @return 스페인어 카테고리 값
-     */
-    private String mapCategoryToSpanish(String category) {
-        if (category == null) {
-            return "Categoría Desconocida"; // 알 수 없는 카테고리
-        }
-        switch (category.toUpperCase()) { // 대소문자 구분 없이 비교
-            case "HARDWARE_ISSUE":
-                return "Problema de Hardware";
-            case "SOFTWARE_BUG":
-                return "Error de Software";
-            case "NETWORK_PROBLEM":
-                return "Problema de Red";
-            default:
-                return category; // 일치하는 항목이 없으면 원래 값 반환
-        }
-    }
-
 }
+

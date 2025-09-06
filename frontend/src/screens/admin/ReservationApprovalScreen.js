@@ -1,9 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { useAppContext } from '../../contexts/AppContext'; // La ruta puede variar
+import { useAppContext } from '../../contexts/AppContext';
+import { useTranslation } from 'react-i18next';
 
 const ReservationApprovalScreen = () => {
-    const { showToast } = useAppContext();
+    const { showToast, fetchWithAuth } = useAppContext();
+    const { t } = useTranslation();
     const [reservations, setReservations] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -12,9 +14,9 @@ const ReservationApprovalScreen = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/admin/reservations');
+            const response = await fetchWithAuth('/admin/reservations');
             if (!response.ok) {
-                throw new Error('No se pudo cargar la lista de reservas.');
+                throw new Error(t('reservations.errors.loadFailed'));
             }
             const data = await response.json();
             setReservations(data);
@@ -31,42 +33,42 @@ const ReservationApprovalScreen = () => {
 
     const handleStatusChange = async (id, newStatus) => {
         try {
-            const response = await fetch(`/api/admin/reservations/${id}`, {
+            const response = await fetchWithAuth(`/admin/reservations/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: newStatus })
             });
 
             if (!response.ok) {
-                throw new Error('No se pudo actualizar el estado.');
+                throw new Error(t('reservations.errors.updateFailed'));
             }
             
             // Actualiza el estado en la UI inmediatamente para una mejor experiencia de usuario
             setReservations(reservations.map(r => r.id === id ? { ...r, status: newStatus } : r));
-            showToast(`La reserva ha sido marcada como ${newStatus.toLowerCase()}.`);
+            showToast(t('reservations.success.marked', { status: newStatus.toLowerCase() }));
 
         } catch (err) {
-            showToast(`Error: ${err.message}`);
+            showToast(t('common.errorWithMessage', { message: err.message }));
         }
     };
 
     const statusColor = { 'Aprobada': 'text-green-800 bg-green-100', 'Pendiente': 'text-yellow-800 bg-yellow-100', 'Rechazada': 'text-red-800 bg-red-100', 'Cancelada': 'text-gray-800 bg-gray-100' };
 
-    if (isLoading) return <div className="p-6 text-center">Cargando reservas...</div>;
-    if (error) return <div className="p-6 text-center text-red-500">Error: {error}</div>;
+    if (isLoading) return <div className="p-6 text-center">{t('reservations.loading')}</div>;
+    if (error) return <div className="p-6 text-center text-red-500">{t('common.errorWithMessage', { message: error })}</div>;
 
     return (
         <div className="bg-white rounded-lg shadow-lg p-6 md:p-8 text-gray-800">
-            <h2 className="text-2xl font-bold text-sky-700 mb-6">Gestión de Aprobación de Reservas</h2>
+            <h2 className="text-2xl font-bold text-sky-700 mb-6">{t('reservations.title')}</h2>
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
                     <thead className="bg-gray-100">
                         <tr>
-                            <th className="p-3">Solicitante</th>
-                            <th className="p-3">Instalación</th>
-                            <th className="p-3">Fecha de Reserva</th>
-                            <th className="p-3">Estado</th>
-                            <th className="p-3 text-center">Acciones</th>
+                            <th className="p-3">{t('reservations.table.requester')}</th>
+                            <th className="p-3">{t('reservations.table.facility')}</th>
+                            <th className="p-3">{t('reservations.table.date')}</th>
+                            <th className="p-3">{t('reservations.table.status')}</th>
+                            <th className="p-3 text-center">{t('reservations.table.actions')}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -83,8 +85,8 @@ const ReservationApprovalScreen = () => {
                                 <td className="p-3 text-center">
                                     {res.status === 'Pendiente' && (
                                         <div className="flex gap-2 justify-center">
-                                            <button onClick={() => handleStatusChange(res.id, 'Aprobada')} className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Aprobar</button>
-                                            <button onClick={() => handleStatusChange(res.id, 'Rechazada')} className="text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Rechazar</button>
+                                            <button onClick={() => handleStatusChange(res.id, 'Aprobada')} className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">{t('reservations.actions.approve')}</button>
+                                            <button onClick={() => handleStatusChange(res.id, 'Rechazada')} className="text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">{t('reservations.actions.reject')}</button>
                                         </div>
                                     )}
                                 </td>

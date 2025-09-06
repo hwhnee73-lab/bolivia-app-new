@@ -45,6 +45,10 @@ public class UserAdminService {
         user.setHo(request.getHo());
         user.setDisplayName(request.getDisplayName());
         user.setEmail(request.getEmail());
+        // 기본 username 정책: 이메일 사용 (null 방지)
+        if (request.getEmail() != null) {
+            user.setUsername(request.getEmail());
+        }
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setRole(User.Role.valueOf(request.getRole()));
         user.setStatus(User.Status.valueOf(request.getStatus()));
@@ -73,5 +77,13 @@ public class UserAdminService {
     @Transactional
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
+    }
+
+    @Transactional
+    public void disableUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        user.setStatus(User.Status.LOCKED);
+        userRepository.save(user);
     }
 }

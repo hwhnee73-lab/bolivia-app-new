@@ -32,4 +32,36 @@ public class BillAdminDto {
         private String status;
         private String due_date;
     }
+
+    // Batch upload preview row
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class BatchRowPreview {
+        private int rowNumber;
+        private String building_number;
+        private String unit_number;
+        private String bill_month;
+        private BigDecimal total_amount;
+        private String due_date;
+        private String status;
+        private boolean valid;
+        private String error;
+    }
+
+    // Batch upload preview response
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class BatchPreviewResponse {
+        private String tokenKey;
+        private int totalRows;
+        private int validCount;
+        private int invalidCount;
+        private java.util.List<BatchRowPreview> rows;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+    public static class BatchConfirmResult {
+        private String tokenKey;
+        private int total;
+        private int upserted;
+        private int skippedInvalid;
+    }
 }

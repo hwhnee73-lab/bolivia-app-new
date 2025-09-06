@@ -26,4 +26,14 @@ public class BillDto {
         private String item_name;
         private BigDecimal amount;
     }
+
+    @Getter @Setter
+    @AllArgsConstructor
+    public static class PaymentInfo {
+        private Long id;
+        private Long bill_id;
+        private BigDecimal amount;
+        private String payment_method;
+        private java.time.LocalDateTime payment_date;
+    }
 }

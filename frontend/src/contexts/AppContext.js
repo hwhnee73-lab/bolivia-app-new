@@ -1,91 +1,101 @@
 import React, { useState, createContext, useContext } from 'react';
 import { CONSTANTS } from '../constants';
+import http, { setAccessToken as setHttpAccessToken, setOnUnauthorized } from '../services/http';
 
-// Crea un Context de React para la gestión del estado global.
 const AppContext = createContext(null);
 
 export const useAppContext = () => {
-    const context = useContext(AppContext);
-    if (context === null) throw new Error("useAppContext must be used within an AppProvider");
-    return context;
+  const context = useContext(AppContext);
+  if (context === null) throw new Error('useAppContext must be used within an AppProvider');
+  return context;
 };
 
 export const AppProvider = ({ children }) => {
-    const [persona, setPersona] = useState('resident');
-    const [activeView, setActiveView] = useState('auth');
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [currentUser, setCurrentUser] = useState(null);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [toast, setToast] = useState({ message: '', isVisible: false });
+  const [persona, setPersona] = useState('resident');
+  const [activeView, setActiveView] = useState('auth');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [toast, setToast] = useState({ message: '', isVisible: false });
+  const [accessToken, setAccessToken] = useState(null);
 
-    // --- 추가된 부분 1: Access Token을 저장할 상태 ---
-    const [accessToken, setAccessToken] = useState(null);
+  const showToast = (message) => {
+    setToast({ message, isVisible: true });
+    setTimeout(() => setToast({ message: '', isVisible: false }), 3000);
+  };
 
-    const showToast = (message) => {
-        setToast({ message, isVisible: true });
-        setTimeout(() => setToast({ message: '', isVisible: false }), 3000);
-    };
+  const navigateTo = (viewId) => {
+    setActiveView(viewId);
+    setIsMenuOpen(false);
+  };
 
-    const navigateTo = (viewId) => {
-        setActiveView(viewId);
-        setIsMenuOpen(false);
-    };
-    
-    // --- 수정된 부분: handleLoginSuccess 함수 ---
-    const handleLoginSuccess = (user, token) => {
-        setPersona(user.role === 'ADMIN' ? 'admin' : 'resident');
-        setCurrentUser(user);
-        setAccessToken(token); // Access Token을 상태에 저장
-        setIsLoggedIn(true);
-        setActiveView('dashboard');
-    };
+  // Login with email/username + password
+  const login = async (id, password) => {
+    const res = await http.post('/auth/login', { id, password });
+    const token = res?.data?.accessToken;
+    if (!token) throw new Error('Missing access token');
+    setAccessToken(token);
+    setHttpAccessToken(token);
+    const minimalUser = { username: id, email: id.includes('@') ? id : undefined, role: 'RESIDENT' };
+    setCurrentUser(minimalUser);
+    setPersona(minimalUser.role === 'ADMIN' ? 'admin' : 'resident');
+    setIsLoggedIn(true);
+    setActiveView('dashboard');
+  };
 
-    // --- 수정된 부분: handleLogout 함수 ---
-    const handleLogout = () => {
-        setIsLoggedIn(false);
-        setCurrentUser(null);
-        setAccessToken(null); // Access Token 초기화
-        setActiveView('auth');
-        showToast("Se ha cerrado la sesión.");
-    };
+  // Auto-logout on unauthorized refresh failures
+  setOnUnauthorized(() => {
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    setAccessToken(null);
+    setHttpAccessToken(null);
+    setActiveView('auth');
+  });
 
-    // --- 추가된 부분 2: 인증 헤더를 포함한 fetch 함수 ---
-    const fetchWithAuth = async (url, options = {}) => {
-        const headers = {
-            'Content-Type': 'application/json',
-            ...options.headers,
-        };
+  const handleLogout = async () => {
+    try {
+      await http.post('/auth/logout');
+    } catch (_) {}
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    setAccessToken(null);
+    setHttpAccessToken(null);
+    setActiveView('auth');
+    showToast('Se ha cerrado la sesión.');
+  };
 
-        if (accessToken) {
-            headers['Authorization'] = `Bearer ${accessToken}`;
-        }
+  // Axios-backed wrapper with fetch-like interface
+  const fetchWithAuth = async (url, options = {}) => {
+    const method = (options.method || 'GET').toUpperCase();
+    const headers = options.headers || {};
+    const data = options.body ? options.body : undefined;
+    try {
+      const res = await http.request({ url, method, headers, data });
+      return { ok: true, status: res.status, json: async () => res.data };
+    } catch (err) {
+      const resp = err?.response;
+      if (!resp) throw err;
+      return { ok: false, status: resp.status, json: async () => resp.data };
+    }
+  };
 
-        const response = await fetch(url, { ...options, headers });
+  const value = {
+    persona,
+    activeView,
+    isLoggedIn,
+    currentUser,
+    setCurrentUser,
+    isMenuOpen,
+    contentData: CONSTANTS.CONTENT_DATA,
+    toast,
+    navigateTo,
+    login,
+    handleLogout,
+    showToast,
+    setIsMenuOpen,
+    fetchWithAuth,
+  };
 
-        // 토큰 만료 등의 401 Unauthorized 에러 발생 시 자동 로그아웃 처리
-        if (response.status === 401) {
-            handleLogout();
-            throw new Error('Su sesión ha expirado. Por favor, inicie sesión de nuevo.');
-        }
-
-        return response;
-    };
-
-    const value = { 
-        persona, 
-        activeView, 
-        isLoggedIn, 
-        currentUser, 
-        isMenuOpen, 
-        contentData: CONSTANTS.CONTENT_DATA, 
-        toast, 
-        navigateTo, 
-        handleLoginSuccess, 
-        handleLogout, 
-        showToast, 
-        setIsMenuOpen,
-        fetchWithAuth // --- 추가된 부분 3: 컨텍스트에 함수 제공 ---
-    };
-
-    return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
+

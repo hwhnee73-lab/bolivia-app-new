@@ -1,0 +1,596 @@
+time="2025-09-06T18:09:33+09:00" level=warning msg="The \"GOOGLE_CLIENT_ID\" variable is not set. Defaulting to a blank string."
+time="2025-09-06T18:09:33+09:00" level=warning msg="The \"GOOGLE_CLIENT_SECRET\" variable is not set. Defaulting to a blank string."
+#1 [internal] load local bake definitions
+#1 reading from stdin 973B done
+#1 DONE 0.0s
+
+#2 [nginx internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.03kB 0.0s done
+#2 DONE 0.1s
+
+#3 [backend internal] load build definition from Dockerfile
+#3 transferring dockerfile: 1.04kB 0.0s done
+#3 DONE 0.1s
+
+#4 [nginx internal] load metadata for docker.io/library/nginx:stable-alpine
+#4 ...
+
+#5 [auth] library/node:pull token for registry-1.docker.io
+#5 DONE 0.0s
+
+#6 [auth] library/nginx:pull token for registry-1.docker.io
+#6 DONE 0.0s
+
+#7 [auth] library/gradle:pull token for registry-1.docker.io
+#7 DONE 0.0s
+
+#8 [auth] library/eclipse-temurin:pull token for registry-1.docker.io
+#8 DONE 0.0s
+
+#9 [nginx internal] load metadata for docker.io/library/node:18-alpine
+#9 ...
+
+#10 [backend internal] load metadata for docker.io/library/gradle:8.5-jdk17-jammy
+#10 DONE 2.7s
+
+#11 [backend internal] load metadata for docker.io/library/eclipse-temurin:17-jre-jammy
+#11 DONE 2.7s
+
+#12 [backend internal] load .dockerignore
+#12 transferring context: 2B 0.0s done
+#12 DONE 0.1s
+
+#13 [backend stage-1 1/5] FROM docker.io/library/eclipse-temurin:17-jre-jammy@sha256:93db0dba1dacb225fed826c2ae720adae9a71205f2b199b8af7e4df5be010cb7
+#13 resolve docker.io/library/eclipse-temurin:17-jre-jammy@sha256:93db0dba1dacb225fed826c2ae720adae9a71205f2b199b8af7e4df5be010cb7 0.0s done
+#13 DONE 0.0s
+
+#14 [backend build 1/4] FROM docker.io/library/gradle:8.5-jdk17-jammy@sha256:7704366590930c03de7e514008ba3d7b7031b92591bd5a74fae79c16f3a17726
+#14 resolve docker.io/library/gradle:8.5-jdk17-jammy@sha256:7704366590930c03de7e514008ba3d7b7031b92591bd5a74fae79c16f3a17726 0.0s done
+#14 DONE 0.0s
+
+#15 [backend internal] load build context
+#15 ...
+
+#4 [nginx internal] load metadata for docker.io/library/nginx:stable-alpine
+#4 DONE 2.9s
+
+#9 [nginx internal] load metadata for docker.io/library/node:18-alpine
+#9 DONE 2.9s
+
+#16 [nginx internal] load .dockerignore
+#16 transferring context: 2B 0.0s done
+#16 DONE 0.0s
+
+#17 [nginx internal] load build context
+#17 DONE 0.0s
+
+#18 [nginx build 1/6] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#18 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 0.0s done
+#18 DONE 0.0s
+
+#15 [backend internal] load build context
+#15 ...
+
+#19 [nginx stage-1 1/2] FROM docker.io/library/nginx:stable-alpine@sha256:8f2bcf97c473dfe311e79a510ee540ee02e28ce1e6a64e1ef89bfad32574ef10
+#19 resolve docker.io/library/nginx:stable-alpine@sha256:8f2bcf97c473dfe311e79a510ee540ee02e28ce1e6a64e1ef89bfad32574ef10 0.0s done
+#19 DONE 0.0s
+
+#15 [backend internal] load build context
+#15 transferring context: 204.10kB 0.6s done
+#15 DONE 0.6s
+
+#20 [backend build 2/4] WORKDIR /home/gradle/src
+#20 CACHED
+
+#21 [backend build 3/4] COPY --chown=gradle:gradle . .
+#21 DONE 0.1s
+
+#22 [backend build 4/4] RUN gradle build --no-daemon -x test
+#22 1.287 
+#22 1.287 Welcome to Gradle 8.5!
+#22 1.287 
+#22 1.287 Here are the highlights of this release:
+#22 1.287  - Support for running on Java 21
+#22 1.287  - Faster first use with Kotlin DSL
+#22 1.287  - Improved error and warning messages
+#22 1.287 
+#22 1.287 For more details see https://docs.gradle.org/8.5/release-notes.html
+#22 1.287 
+#22 1.386 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+#22 2.385 Daemon will be stopped at the end of the build 
+#22 ...
+
+#17 [nginx internal] load build context
+#17 transferring context: 12.96MB 6.0s
+#17 transferring context: 18.46MB 11.0s
+#17 transferring context: 23.20MB 16.1s
+#17 transferring context: 28.26MB 21.2s
+#17 transferring context: 29.25MB 26.7s
+#17 transferring context: 30.30MB 31.7s
+#17 transferring context: 45.29MB 36.8s
+#17 transferring context: 49.14MB 41.8s
+#17 transferring context: 54.16MB 47.0s
+#17 transferring context: 60.05MB 52.0s
+#17 transferring context: 64.00MB 57.1s
+#17 transferring context: 73.32MB 62.2s
+#17 transferring context: 73.66MB 67.3s
+#17 transferring context: 74.62MB 72.3s
+#17 ...
+
+#22 [backend build 4/4] RUN gradle build --no-daemon -x test
+#22 74.01 > Task :compileJava
+#22 ...
+
+#17 [nginx internal] load build context
+#17 transferring context: 76.10MB 79.7s
+#17 transferring context: 77.05MB 84.8s
+#17 transferring context: 81.07MB 90.4s
+#17 transferring context: 88.02MB 95.5s
+#17 transferring context: 89.76MB 100.5s
+#17 transferring context: 95.73MB 105.6s
+#17 transferring context: 100.73MB 110.7s
+#17 transferring context: 104.82MB 115.7s
+#17 ...
+
+#22 [backend build 4/4] RUN gradle build --no-daemon -x test
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:85: error: unmappable character (0x84) for encoding UTF-8
+#22 116.1         // 3. Actualizar el estado de la factura a '?�납' (Pagado)
+#22 116.1                                                      ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:86: error: unmappable character (0x84) for encoding UTF-8
+#22 116.1         String updateBillSql = "UPDATE bills SET status = '?�납', updated_at = NOW() WHERE id = ?";
+#22 116.1                                                             ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:94: error: unmappable character (0x84) for encoding UTF-8
+#22 116.1             case "?�납": return "Pagado";
+#22 116.1                    ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xB0) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                     ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xE1) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                      ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xC1) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                       ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xA6) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                        ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xBF) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                          ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xB5) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                           ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xBC) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                            ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xF6) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                             ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xC1) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                              ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xF5) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                               ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xBB) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                                  ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xF9) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                                   ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xC7) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                                    ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:125: error: unmappable character (0xC3) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���� ������ (����)", title));
+#22 116.1                                                                     ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:126: error: unmappable character (0xBC) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("����: " + row.get("building_number") + "-" + row.get("unit_number"), body));
+#22 116.1                                                     ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:126: error: unmappable character (0xBC) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("����: " + row.get("building_number") + "-" + row.get("unit_number"), body));
+#22 116.1                                                      ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:126: error: unmappable character (0xB4) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("����: " + row.get("building_number") + "-" + row.get("unit_number"), body));
+#22 116.1                                                       ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:126: error: unmappable character (0xEB) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("����: " + row.get("building_number") + "-" + row.get("unit_number"), body));
+#22 116.1                                                        ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:127: error: unmappable character (0xB1) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("û����: " + row.get("bill_month"), body));
+#22 116.1                                                      ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:127: error: unmappable character (0xB8) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("û����: " + row.get("bill_month"), body));
+#22 116.1                                                       ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:127: error: unmappable character (0xBF) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("û����: " + row.get("bill_month"), body));
+#22 116.1                                                        ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:127: error: unmappable character (0xF9) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("û����: " + row.get("bill_month"), body));
+#22 116.1                                                         ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:128: error: unmappable character (0xB0) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("�����ݾ�: " + row.get("amount"), body));
+#22 116.1                                                     ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:128: error: unmappable character (0xE1) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("�����ݾ�: " + row.get("amount"), body));
+#22 116.1                                                      ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:128: error: unmappable character (0xC1) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("�����ݾ�: " + row.get("amount"), body));
+#22 116.1                                                       ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:128: error: unmappable character (0xA6) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("�����ݾ�: " + row.get("amount"), body));
+#22 116.1                                                        ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:128: error: unmappable character (0xB1) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("�����ݾ�: " + row.get("amount"), body));
+#22 116.1                                                         ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:128: error: unmappable character (0xD7) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("�����ݾ�: " + row.get("amount"), body));
+#22 116.1                                                           ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:129: error: unmappable character (0xB9) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���: " + row.get("payment_method"), body));
+#22 116.1                                                     ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:129: error: unmappable character (0xE6B9) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���: " + row.get("payment_method"), body));
+#22 116.1                                                      ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:129: error: unmappable character (0xFD) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("���: " + row.get("payment_method"), body));
+#22 116.1                                                       ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:130: error: unmappable character (0xC0) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("�Ͻ�: " + row.get("payment_date"), body));
+#22 116.1                                                     ^
+#22 116.1 /home/gradle/src/src/main/java/com/example/bolivia/service/PaymentService.java:130: error: unmappable character (0xC3) for encoding UTF-8
+#22 116.1             doc.add(new com.lowagie.text.Paragraph("�Ͻ�: " + row.get("payment_date"), body));
+#22 116.1                                                       ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/TaskAdminService.java:1: error: illegal character: '\ufeff'
+#22 116.2 ﻿package com.example.bolivia.service;
+#22 116.2 ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/TaskAdminService.java:1: error: class, interface, enum, or record expected
+#22 116.2 ﻿package com.example.bolivia.service;
+#22 116.2          ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/TaskAdminService.java:64: error: : or -> expected
+#22 116.2             case "?묒닔??: return "Recibido";
+#22 116.2                                  ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/TaskAdminService.java:64: error: unclosed string literal
+#22 116.2             case "?묒닔??: return "Recibido";
+#22 116.2                                          ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/TaskAdminService.java:65: error: : or -> expected
+#22 116.2             case "泥섎━以?: return "En Proceso";
+#22 116.2                                  ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/TaskAdminService.java:65: error: unclosed string literal
+#22 116.2             case "泥섎━以?: return "En Proceso";
+#22 116.2                                            ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/TaskAdminService.java:66: error: : or -> expected
+#22 116.2             case "?꾨즺??: return "Completado";
+#22 116.2                                  ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/TaskAdminService.java:66: error: unclosed string literal
+#22 116.2             case "?꾨즺??: return "Completado";
+#22 116.2                                            ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/TaskAdminService.java:74: error: unclosed string literal
+#22 116.2             case "Recibido": return "?묒닔??;
+#22 116.2                                     ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/TaskAdminService.java:75: error: unclosed string literal
+#22 116.2             case "En Proceso": return "泥섎━以?;
+#22 116.2                                       ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/TaskAdminService.java:76: error: unclosed string literal
+#22 116.2             case "Completado": return "?꾨즺??;
+#22 116.2                                       ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:103: error: class, interface, enum, or record expected
+#22 116.2     public BillAdminDto.BatchPreviewResponse parseAndValidateBatch(MultipartFile file) {
+#22 116.2            ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:105: error: class, interface, enum, or record expected
+#22 116.2         List<BillAdminDto.BatchRowPreview> rows;
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:106: error: class, interface, enum, or record expected
+#22 116.2         try {
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:109: error: class, interface, enum, or record expected
+#22 116.2             } else if (filename.endsWith(".csv")) {
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:111: error: class, interface, enum, or record expected
+#22 116.2             } else {
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:113: error: class, interface, enum, or record expected
+#22 116.2             }
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:116: error: class, interface, enum, or record expected
+#22 116.2         }
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:119: error: class, interface, enum, or record expected
+#22 116.2         for (BillAdminDto.BatchRowPreview r : rows) {
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:120: error: class, interface, enum, or record expected
+#22 116.2             if (r.isValid()) valid++; else invalid++;
+#22 116.2                                       ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:121: error: class, interface, enum, or record expected
+#22 116.2         }
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:124: error: class, interface, enum, or record expected
+#22 116.2         String tokenKey = UUID.randomUUID().toString();
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:125: error: class, interface, enum, or record expected
+#22 116.2         PREVIEW_CACHE.put(tokenKey, new CachedPreview(System.currentTimeMillis(), rows));
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:127: error: class, interface, enum, or record expected
+#22 116.2         return new BillAdminDto.BatchPreviewResponse(tokenKey, rows.size(), valid, invalid, rows);
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:128: error: class, interface, enum, or record expected
+#22 116.2     }
+#22 116.2     ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:132: error: class, interface, enum, or record expected
+#22 116.2         PREVIEW_CACHE.entrySet().removeIf(e -> now - e.getValue().createdAt > TTL_MILLIS);
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:133: error: class, interface, enum, or record expected
+#22 116.2     }
+#22 116.2     ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:135: error: class, interface, enum, or record expected
+#22 116.2     private static final Pattern YM = Pattern.compile("^\\d{4}-\\d{2}$");
+#22 116.2                          ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:137: error: class, interface, enum, or record expected
+#22 116.2     private List<BillAdminDto.BatchRowPreview> parseCsv(InputStream in) throws Exception {
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:139: error: class, interface, enum, or record expected
+#22 116.2         try (BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:141: error: class, interface, enum, or record expected
+#22 116.2             if (header == null) return list;
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:142: error: class, interface, enum, or record expected
+#22 116.2             int rowNum = 1;
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:143: error: class, interface, enum, or record expected
+#22 116.2             String line;
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:144: error: class, interface, enum, or record expected
+#22 116.2             while ((line = br.readLine()) != null) {
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:146: error: class, interface, enum, or record expected
+#22 116.2                 String[] cols = line.split(",");
+#22 116.2                 ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:147: error: class, interface, enum, or record expected
+#22 116.2                 BillAdminDto.BatchRowPreview r = fromColumns(rowNum, cols);
+#22 116.2                 ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:148: error: class, interface, enum, or record expected
+#22 116.2                 validateRow(r);
+#22 116.2                 ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:149: error: class, interface, enum, or record expected
+#22 116.2                 list.add(r);
+#22 116.2                 ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:150: error: class, interface, enum, or record expected
+#22 116.2             }
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:153: error: class, interface, enum, or record expected
+#22 116.2     }
+#22 116.2     ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:157: error: class, interface, enum, or record expected
+#22 116.2         try (XSSFWorkbook wb = new XSSFWorkbook(in)) {
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:159: error: class, interface, enum, or record expected
+#22 116.2             int rowNum = 0;
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:160: error: class, interface, enum, or record expected
+#22 116.2             for (Row row : sheet) {
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:162: error: class, interface, enum, or record expected
+#22 116.2                 if (rowNum == 1) continue; // skip header
+#22 116.2                 ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:163: error: class, interface, enum, or record expected
+#22 116.2                 String[] cols = new String[6];
+#22 116.2                 ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:164: error: class, interface, enum, or record expected
+#22 116.2                 for (int i = 0; i < cols.length; i++) {
+#22 116.2                 ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:164: error: class, interface, enum, or record expected
+#22 116.2                 for (int i = 0; i < cols.length; i++) {
+#22 116.2                                 ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:164: error: class, interface, enum, or record expected
+#22 116.2                 for (int i = 0; i < cols.length; i++) {
+#22 116.2                                                  ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:166: error: class, interface, enum, or record expected
+#22 116.2                     cols[i] = c == null ? null : getCellString(c);
+#22 116.2                     ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:167: error: class, interface, enum, or record expected
+#22 116.2                 }
+#22 116.2                 ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:169: error: class, interface, enum, or record expected
+#22 116.2                 validateRow(r);
+#22 116.2                 ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:170: error: class, interface, enum, or record expected
+#22 116.2                 list.add(r);
+#22 116.2                 ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:171: error: class, interface, enum, or record expected
+#22 116.2             }
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:174: error: class, interface, enum, or record expected
+#22 116.2     }
+#22 116.2     ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:179: error: class, interface, enum, or record expected
+#22 116.2             case NUMERIC: return String.valueOf((long)c.getNumericCellValue());
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:180: error: class, interface, enum, or record expected
+#22 116.2             case BOOLEAN: return String.valueOf(c.getBooleanCellValue());
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:181: error: class, interface, enum, or record expected
+#22 116.2             default: return null;
+#22 116.2                    ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:182: error: class, interface, enum, or record expected
+#22 116.2         }
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:187: error: class, interface, enum, or record expected
+#22 116.2         String unit = safe(cols,1);
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:188: error: class, interface, enum, or record expected
+#22 116.2         String ym = safe(cols,2);
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:189: error: class, interface, enum, or record expected
+#22 116.2         String amtStr = safe(cols,3);
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:190: error: class, interface, enum, or record expected
+#22 116.2         String due = safe(cols,4);
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:191: error: class, interface, enum, or record expected
+#22 116.2         String status = safe(cols,5);
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:192: error: class, interface, enum, or record expected
+#22 116.2         BillAdminDto.BatchRowPreview r = new BillAdminDto.BatchRowPreview();
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:193: error: class, interface, enum, or record expected
+#22 116.2         r.setRowNumber(rowNumber);
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:194: error: class, interface, enum, or record expected
+#22 116.2         r.setBuilding_number(building);
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:195: error: class, interface, enum, or record expected
+#22 116.2         r.setUnit_number(unit);
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:196: error: class, interface, enum, or record expected
+#22 116.2         r.setBill_month(ym);
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:197: error: class, interface, enum, or record expected
+#22 116.2         r.setDue_date(due);
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:198: error: class, interface, enum, or record expected
+#22 116.2         r.setStatus(status);
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:199: error: class, interface, enum, or record expected
+#22 116.2         try {
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:202: error: class, interface, enum, or record expected
+#22 116.2             }
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:205: error: class, interface, enum, or record expected
+#22 116.2         }
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:207: error: class, interface, enum, or record expected
+#22 116.2     }
+#22 116.2     ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:211: error: class, interface, enum, or record expected
+#22 116.2             r.setValid(false); r.setError("Missing building/unit"); return;
+#22 116.2                                ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:211: error: class, interface, enum, or record expected
+#22 116.2             r.setValid(false); r.setError("Missing building/unit"); return;
+#22 116.2                                                                     ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:212: error: class, interface, enum, or record expected
+#22 116.2         }
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:214: error: class, interface, enum, or record expected
+#22 116.2             r.setValid(false); r.setError("bill_month must be YYYY-MM"); return;
+#22 116.2                                ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:214: error: class, interface, enum, or record expected
+#22 116.2             r.setValid(false); r.setError("bill_month must be YYYY-MM"); return;
+#22 116.2                                                                          ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:215: error: class, interface, enum, or record expected
+#22 116.2         }
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:217: error: class, interface, enum, or record expected
+#22 116.2             r.setValid(false); r.setError("Missing total_amount"); return;
+#22 116.2                                ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:217: error: class, interface, enum, or record expected
+#22 116.2             r.setValid(false); r.setError("Missing total_amount"); return;
+#22 116.2                                                                    ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:218: error: class, interface, enum, or record expected
+#22 116.2         }
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:219: error: class, interface, enum, or record expected
+#22 116.2         try { LocalDate.parse(r.getDue_date()); } catch (Exception e) { r.setValid(false); r.setError("Invalid due_date"); return; }
+#22 116.2                                                 ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:219: error: class, interface, enum, or record expected
+#22 116.2         try { LocalDate.parse(r.getDue_date()); } catch (Exception e) { r.setValid(false); r.setError("Invalid due_date"); return; }
+#22 116.2                                                                                            ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:219: error: class, interface, enum, or record expected
+#22 116.2         try { LocalDate.parse(r.getDue_date()); } catch (Exception e) { r.setValid(false); r.setError("Invalid due_date"); return; }
+#22 116.2                                                                                                                            ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:219: error: class, interface, enum, or record expected
+#22 116.2         try { LocalDate.parse(r.getDue_date()); } catch (Exception e) { r.setValid(false); r.setError("Invalid due_date"); return; }
+#22 116.2                                                                                                                                    ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:223: error: class, interface, enum, or record expected
+#22 116.2         if (s == null) { r.setValid(false); r.setError("Missing status"); return; }
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:223: error: class, interface, enum, or record expected
+#22 116.2         if (s == null) { r.setValid(false); r.setError("Missing status"); return; }
+#22 116.2                                             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:223: error: class, interface, enum, or record expected
+#22 116.2         if (s == null) { r.setValid(false); r.setError("Missing status"); return; }
+#22 116.2                                                                           ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:223: error: class, interface, enum, or record expected
+#22 116.2         if (s == null) { r.setValid(false); r.setError("Missing status"); return; }
+#22 116.2                                                                                   ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:225: error: class, interface, enum, or record expected
+#22 116.2         if (mapped == null || mapped.isBlank()) { r.setValid(false); r.setError("Invalid status"); return; }
+#22 116.2         ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:225: error: class, interface, enum, or record expected
+#22 116.2         if (mapped == null || mapped.isBlank()) { r.setValid(false); r.setError("Invalid status"); return; }
+#22 116.2                                                                      ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:225: error: class, interface, enum, or record expected
+#22 116.2         if (mapped == null || mapped.isBlank()) { r.setValid(false); r.setError("Invalid status"); return; }
+#22 116.2                                                                                                    ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:225: error: class, interface, enum, or record expected
+#22 116.2         if (mapped == null || mapped.isBlank()) { r.setValid(false); r.setError("Invalid status"); return; }
+#22 116.2                                                                                                            ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:231: error: <identifier> expected
+#22 116.2                     Long.class, r.getBuilding_number(), r.getUnit_number());
+#22 116.2                               ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:232: error: class, interface, enum, or record expected
+#22 116.2             if (hid == null) { r.setValid(false); r.setError("Household not found"); return; }
+#22 116.2             ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:232: error: class, interface, enum, or record expected
+#22 116.2             if (hid == null) { r.setValid(false); r.setError("Household not found"); return; }
+#22 116.2                                                   ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:232: error: class, interface, enum, or record expected
+#22 116.2             if (hid == null) { r.setValid(false); r.setError("Household not found"); return; }
+#22 116.2                                                                                      ^
+#22 116.2 /home/gradle/src/src/main/java/com/example/bolivia/service/BillAdminService.java:232: error: class, interface, enum, or record expected
+#22 116.2             if (hid == null) { r.setValid(false); r.setError("Household not found"); return; }
+#22 116.2                                                                                              ^
+#22 116.2 100 errors
+#22 116.2 only showing the first 100 errors, of 126 total; use -Xmaxerrs if you would like to see more
+#22 116.2 
+#22 116.2 > Task :compileJava FAILED
+#22 116.3 
+#22 116.3 FAILURE: Build failed with an exception.
+#22 116.3 
+#22 116.3 * What went wrong:
+#22 116.3 Execution failed for task ':compileJava'.
+#22 116.3 > Compilation failed; see the compiler error output for details.
+#22 116.3 
+#22 116.3 * Try:
+#22 116.3 > Run with --info option to get more log output.
+#22 116.3 > Run with --scan to get full insights.
+#22 116.3 
+#22 116.3 BUILD FAILED in 1m 55s
+#22 116.3 1 actionable task: 1 executed
+#22 ERROR: process "/bin/sh -c gradle build --no-daemon -x test" did not complete successfully: exit code: 1
+
+#17 [nginx internal] load build context
+#17 transferring context: 105.46MB 117.4s done
+#17 CANCELED
+------
+ > [backend build 4/4] RUN gradle build --no-daemon -x test:
+116.3 * What went wrong:
+116.3 Execution failed for task ':compileJava'.
+116.3 > Compilation failed; see the compiler error output for details.
+116.3 
+116.3 * Try:
+116.3 > Run with --info option to get more log output.
+116.3 > Run with --scan to get full insights.
+116.3 
+116.3 BUILD FAILED in 1m 55s
+116.3 1 actionable task: 1 executed
+------
+Dockerfile:7
+
+--------------------
+
+   5 |     COPY --chown=gradle:gradle . .
+
+   6 |     # 테스트를 제외하여 빌드 시간을 단축합니다.
+
+   7 | >>> RUN gradle build --no-daemon -x test
+
+   8 |     
+
+   9 |     # --- Stage 2: Production Stage (JRE 17) ---
+
+--------------------
+
+target backend: failed to solve: process "/bin/sh -c gradle build --no-daemon -x test" did not complete successfully: exit code: 1
+
