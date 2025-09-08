@@ -44,9 +44,18 @@ public class AuthController {
                 .path("/api/auth")
                 .build();
 
+        // 1. 인증된 User 엔티티를 UserDto로 변환합니다.
+        UserDto userDto = UserDto.fromEntity(user); 
+
+        // 2. 응답 본문에 accessToken과 user 객체를 모두 담습니다.
+        Map<String, Object> responseBody = Map.of(
+            "accessToken", accessToken,
+            "user", userDto
+        );
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                .body(Map.of("accessToken", accessToken));
+                .body(responseBody); // 수정된 응답 본문 사용
     }
 
     @PostMapping("/refresh")

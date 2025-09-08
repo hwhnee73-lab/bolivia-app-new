@@ -230,18 +230,25 @@ export const AppProvider = ({ children }) => {
     const t0 = performance.now();
     try {
       const res = await http.post('/auth/login', { id, password });
+
+console.log('Login API Response:', res); 
+
       const token = res?.data?.accessToken;
-      if (!token) {
-        pushLog('warn', 'Login missing access token', { res: redact(res?.data) });
-        throw new Error('Missing access token');
-      }
+ 
       setAccessToken(token);
       setHttpAccessToken(token);
 
       // 사용자 정보 결정: 우선 서버 응답 → JWT payload
       const apiUser = res?.data?.user;
       const payload = decodeJwt(token);
-      const role = apiUser?.role || payload?.role || 'RESIDENT';
+
+console.log('API 응답 유저 정보:', apiUser);
+console.log('JWT 토큰 payload:', payload);
+
+      const role = apiUser?.role || payload?.auth || 'RESIDENT';   // 수정된 코드
+
+console.log('최종 결정된 역할:', role);
+
       const username = apiUser?.username || apiUser?.email || payload?.sub || id;
       const email = apiUser?.email || (id.includes('@') ? id : payload?.email);
 
@@ -250,6 +257,7 @@ export const AppProvider = ({ children }) => {
       setPersona(role === 'ADMIN' ? 'admin' : 'resident');
       setIsLoggedIn(true);
       setActiveView('dashboard');
+
 
       pushLog('info', 'Login success', {
         ms: Math.round(performance.now() - t0),
