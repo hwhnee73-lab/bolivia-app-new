@@ -54,8 +54,10 @@ public class ReservationAdminService {
 
     private String mapStatusToKorean(String feStatus) {
         switch (feStatus) {
+            case "Pendiente": return "승인대기";
             case "Aprobada": return "승인됨";
             case "Rechazada": return "거절됨";
+            case "Cancelada": return "취소됨";
             default: return feStatus;
         }
     }

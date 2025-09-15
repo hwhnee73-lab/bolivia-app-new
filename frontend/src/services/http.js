@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from "axios";
 
 // In-memory Access Token (no storage at rest)
 let accessToken = null;
@@ -11,18 +11,18 @@ export const setAccessToken = (token) => {
 };
 
 export const setOnUnauthorized = (handler) => {
-  onUnauthorized = typeof handler === 'function' ? handler : null;
+  onUnauthorized = typeof handler === "function" ? handler : null;
 };
 
 // Base HTTP client for app APIs
 const http = axios.create({
-  baseURL: '/api',
+  baseURL: "/api",
   withCredentials: true,
 });
 
 // Separate client for token refresh to avoid Authorization header coupling
 const refreshClient = axios.create({
-  baseURL: '/api',
+  baseURL: "/api",
   withCredentials: true,
 });
 
@@ -35,9 +35,9 @@ http.interceptors.request.use((config) => {
 });
 
 async function refreshAccessToken() {
-  const res = await refreshClient.post('/auth/refresh');
+  const res = await refreshClient.post("/auth/refresh");
   const newToken = res?.data?.accessToken;
-  if (!newToken) throw new Error('Missing accessToken in refresh response');
+  if (!newToken) throw new Error("Missing accessToken in refresh response");
   accessToken = newToken;
   return newToken;
 }
@@ -79,15 +79,16 @@ http.interceptors.response.use(
         isRefreshing = false;
         accessToken = null;
         if (onUnauthorized) {
-          try { onUnauthorized(); } catch (_) {}
+          try {
+            onUnauthorized();
+          } catch (_) {}
         }
         return Promise.reject(e);
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default http;
-

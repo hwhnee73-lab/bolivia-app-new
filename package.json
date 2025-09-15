@@ -1,5 +1,14 @@
 {
   "dependencies": {
     "axios": "^1.11.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.4",
+    "@babel/generator": "^7.28.3",
+    "@babel/parser": "^7.28.4",
+    "@babel/traverse": "^7.28.4",
+    "eslint": "^9.35.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "prettier": "^3.6.2"
   }
 }

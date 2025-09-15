@@ -54,15 +54,22 @@ public class SecurityConfig {
             Enumeration<String> headerNames = request.getHeaderNames();
             while (headerNames.hasMoreElements()) {
                 String headerName = headerNames.nextElement();
-                // Authorization 헤더는 민감할 수 있으므로 존재 여부만 로깅
-                if ("authorization".equalsIgnoreCase(headerName)) {
-                    headers.append(String.format("Authorization: %s ", (request.getHeader(headerName) != null ? "Present" : "Not Present")));
+                String lower = headerName.toLowerCase();
+                // 민감 헤더는 값 노출 방지
+                if ("authorization".equals(lower) || "cookie".equals(lower) || "set-cookie".equals(lower)) {
+                    headers.append(String.format("%s: %s ", headerName, (request.getHeader(headerName) != null ? "Present" : "Not Present")));
                 } else {
                     headers.append(String.format("%s: %s ", headerName, request.getHeader(headerName)));
                 }
             }
+            String xff = request.getHeader("X-Forwarded-For");
+            String xReal = request.getHeader("X-Real-IP");
+            String clientIp = xff != null && !xff.isBlank()
+                    ? xff.split(",")[0].trim()
+                    : (xReal != null && !xReal.isBlank() ? xReal : request.getRemoteAddr());
+
             log.info(">>> REQUEST [{} {}] from {} - Headers: [{}]",
-                    request.getMethod(), request.getRequestURI(), request.getRemoteAddr(), headers.toString().trim());
+                    request.getMethod(), request.getRequestURI(), clientIp, headers.toString().trim());
             // --- 요청 로깅 끝 ---
 
             filterChain.doFilter(request, response);
@@ -92,6 +99,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**", "/oauth2/authorization/**").permitAll()
+                        // 컨텍스트 경로(/api)는 Spring이 내부적으로 처리하므로 여기서는 제외
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/resident/**").hasAuthority("RESIDENT")
                         .anyRequest().authenticated()

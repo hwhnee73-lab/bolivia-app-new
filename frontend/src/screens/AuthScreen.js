@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import { useAppContext } from '../contexts/AppContext';
-import PhoneMockup from '../components/common/PhoneMockup';
+import React, { useState } from "react";
+import { useAppContext } from "../contexts/AppContext";
+import PhoneMockup from "../components/common/PhoneMockup";
 
 const AuthScreen = () => {
   const { login } = useAppContext();
-  const [id, setId] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [id, setId] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
     try {
       await login(id, password);
     } catch (err) {
-      setError(err.message || 'Error al iniciar sesión');
+      setError(err.message || "Error al iniciar sesión");
     } finally {
       setIsLoading(false);
     }
@@ -27,7 +27,9 @@ const AuthScreen = () => {
       <form onSubmit={handleLogin} className="text-center space-y-6">
         <div className="text-4xl">🔐</div>
         <h3 className="text-2xl font-bold">Bienvenido a Apt</h3>
-        {error && <div className="p-3 bg-red-500/50 text-white rounded-lg">{error}</div>}
+        {error && (
+          <div className="p-3 bg-red-500/50 text-white rounded-lg">{error}</div>
+        )}
         <input
           type="email"
           value={id}
@@ -49,7 +51,7 @@ const AuthScreen = () => {
           disabled={isLoading}
           className="w-full p-3 rounded bg-teal-600 hover:bg-teal-700 font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+          {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
         </button>
       </form>
     </PhoneMockup>
@@ -57,4 +59,3 @@ const AuthScreen = () => {
 };
 
 export default AuthScreen;
-

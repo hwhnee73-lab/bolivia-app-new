@@ -6,7 +6,8 @@
     opacity: 0;
     transform: translateY(10px) translateX(-50%);
   }
-  10%, 90% {
+  10%,
+  90% {
     opacity: 1;
     transform: translateY(0) translateX(-50%);
   }

@@ -1,10 +1,13 @@
 package com.example.bolivia.controller;
 
+import com.example.bolivia.dto.AuthDto;
+import com.example.bolivia.model.User;
 import com.example.bolivia.repository.UserRepository;
 import com.example.bolivia.security.JwtTokenProvider;
 import com.example.bolivia.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -24,16 +27,23 @@ public class AuthController {
     private final AuthService authService;
     private final JwtTokenProvider tokenProvider;
     private final UserRepository userRepository;
+    private final long refreshValiditySeconds;
 
-    public AuthController(AuthService authService, JwtTokenProvider tokenProvider, UserRepository userRepository) {
+    public AuthController(
+            AuthService authService,
+            JwtTokenProvider tokenProvider,
+            UserRepository userRepository,
+            @Value("${jwt.refresh-token-validity-in-seconds}") long refreshValiditySeconds
+    ) {
         this.authService = authService;
         this.tokenProvider = tokenProvider;
         this.userRepository = userRepository;
+        this.refreshValiditySeconds = refreshValiditySeconds;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody com.example.bolivia.dto.AuthDto.LoginRequest loginRequest) {
-        com.example.bolivia.model.User user = authService.authenticate(loginRequest.getId(), loginRequest.getPassword());
+    public ResponseEntity<?> login(@RequestBody AuthDto.LoginRequest loginRequest) {
+        User user = authService.authenticate(loginRequest.getId(), loginRequest.getPassword());
         String accessToken = tokenProvider.generateAccessToken(user);
         String refreshToken = tokenProvider.generateRefreshToken(user);
 
@@ -42,20 +52,14 @@ public class AuthController {
                 .secure(true)
                 .sameSite("Strict")
                 .path("/api/auth")
+                .maxAge(refreshValiditySeconds)
                 .build();
 
-        // 1. 인증된 User 엔티티를 UserDto로 변환합니다.
-        UserDto userDto = UserDto.fromEntity(user); 
-
-        // 2. 응답 본문에 accessToken과 user 객체를 모두 담습니다.
-        Map<String, Object> responseBody = Map.of(
-            "accessToken", accessToken,
-            "user", userDto
-        );
+        AuthDto.LoginResponse responseBody = new AuthDto.LoginResponse(accessToken, user);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                .body(responseBody); // 수정된 응답 본문 사용
+                .body(responseBody);
     }
 
     @PostMapping("/refresh")

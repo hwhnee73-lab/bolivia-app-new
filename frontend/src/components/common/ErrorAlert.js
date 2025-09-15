@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const ErrorAlert = ({ message }) => {
   if (!message) return null;
@@ -10,4 +10,3 @@ const ErrorAlert = ({ message }) => {
 };
 
 export default ErrorAlert;
-
