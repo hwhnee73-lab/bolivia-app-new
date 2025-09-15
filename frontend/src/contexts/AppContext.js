@@ -13,13 +13,10 @@ export const useAppContext = () => {
 export const AppProvider = ({ children }) => {
     const [persona, setPersona] = useState('resident');
     const [activeView, setActiveView] = useState('auth');
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [currentUser, setCurrentUser] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [toast, setToast] = useState({ message: '', isVisible: false });
-
-    // --- 추가된 부분 1: Access Token을 저장할 상태 ---
-    const [accessToken, setAccessToken] = useState(null);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     const showToast = (message) => {
         setToast({ message, isVisible: true });
@@ -32,10 +29,9 @@ export const AppProvider = ({ children }) => {
     };
     
     // --- 수정된 부분: handleLoginSuccess 함수 ---
-    const handleLoginSuccess = (user, token) => {
-        setPersona(user.role === 'ADMIN' ? 'admin' : 'resident');
-        setCurrentUser(user);
-        setAccessToken(token); // Access Token을 상태에 저장
+    const handleLoginSuccess = (userData, token) => {
+        setPersona(userData.role === 'ADMIN' ? 'admin' : 'resident');
+        setCurrentUser(userData);
         setIsLoggedIn(true);
         setActiveView('dashboard');
     };
@@ -44,7 +40,6 @@ export const AppProvider = ({ children }) => {
     const handleLogout = () => {
         setIsLoggedIn(false);
         setCurrentUser(null);
-        setAccessToken(null); // Access Token 초기화
         setActiveView('auth');
         showToast("Se ha cerrado la sesión.");
     };
@@ -56,8 +51,9 @@ export const AppProvider = ({ children }) => {
             ...options.headers,
         };
 
-        if (accessToken) {
-            headers['Authorization'] = `Bearer ${accessToken}`;
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
         }
 
         const response = await fetch(url, { ...options, headers });

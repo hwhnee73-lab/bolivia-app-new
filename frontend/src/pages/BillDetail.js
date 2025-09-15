@@ -9,19 +9,21 @@ const BillDetail = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchBillDetail = async () => {
+      try {
+        const data = await billService.getBillDetail(id);
+        setBill(data);
+      } catch (error) {
+        console.error('Failed to fetch bill detail:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
     fetchBillDetail();
   }, [id]);
 
-  const fetchBillDetail = async () => {
-    try {
-      const data = await billService.getBillDetail(id);
-      setBill(data);
-    } catch (error) {
-      console.error('Failed to fetch bill detail:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('ko-KR', {

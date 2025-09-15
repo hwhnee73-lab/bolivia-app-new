@@ -29,15 +29,20 @@ const Login = () => {
     setError('');
     setLoading(true);
 
-    const result = await login(formData);
-    
-    if (result.success) {
-      navigate(result.user.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard');
-    } else {
-      setError(result.error || t('auth.loginError'));
+    try {
+      const result = await login(formData);
+      
+      if (result && result.success) {
+        navigate(result.user.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard');
+      } else {
+        setError(result?.error || t('auth.loginError'));
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+      setError(error.message || t('auth.loginError'));
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
@@ -101,9 +106,9 @@ const Login = () => {
                 {t('auth.rememberMe')}
               </label>
             </div>
-            <a href="#" className="text-sm text-primary-600 hover:text-primary-500">
+            <button type="button" className="text-sm text-primary-600 hover:text-primary-500">
               {t('auth.forgotPassword')}
-            </a>
+            </button>
           </div>
 
           <button

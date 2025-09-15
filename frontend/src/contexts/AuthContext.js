@@ -18,30 +18,45 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Check for existing session on mount
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      setAccessToken(token);
-      // Optionally validate token or get user info
-      getCurrentUser();
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const getCurrentUser = async () => {
+  // Get current user info
+  const getCurrentUser = useCallback(async () => {
     try {
       const userData = await authService.getCurrentUser();
       setUser(userData);
       setIsAuthenticated(true);
+      return userData;
     } catch (error) {
       console.error('Failed to get current user:', error);
-      logout();
+      // Don't call logout here to avoid circular dependency
+      setAccessToken(null);
+      setUser(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem('accessToken');
+      throw error;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        setAccessToken(token);
+        try {
+          await getCurrentUser();
+        } catch (error) {
+          // Token is invalid, already cleaned up in getCurrentUser
+          console.log('Session expired or invalid');
+        }
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+  }, [getCurrentUser]);
 
   const login = useCallback(async (credentials) => {
     try {
@@ -89,10 +104,14 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Token refresh failed:', error);
-      logout();
+      // Clean up auth state without calling logout to avoid circular dependency
+      setAccessToken(null);
+      setUser(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem('accessToken');
       return null;
     }
-  }, [logout]);
+  }, []);
 
   const value = {
     user,

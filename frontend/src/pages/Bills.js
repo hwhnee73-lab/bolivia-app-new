@@ -12,7 +12,7 @@ const Bills = () => {
 
   useEffect(() => {
     fetchBills();
-  }, [page]);
+  }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchBills = async () => {
     try {
