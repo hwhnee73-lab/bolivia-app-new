@@ -16,6 +16,7 @@ import Payments from './pages/Payments';
 import Announcements from './pages/Announcements';
 import Maintenance from './pages/Maintenance';
 import Reservations from './pages/Reservations';
+import Settings from './pages/Settings';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -63,6 +64,7 @@ function App() {
             <Route path="/announcements" element={<Announcements />} />
             <Route path="/maintenance" element={<Maintenance />} />
             <Route path="/reservations" element={<Reservations />} />
+            <Route path="/settings" element={<Settings />} />
             
             {/* Admin Only Routes */}
             <Route element={<ProtectedRoute adminOnly />}>
