@@ -1,116 +1,84 @@
-// (auto-concat)
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { useAuth } from './contexts/AuthContext';
 
-import "./i18n";
-import { AppProvider, useAppContext } from "./contexts/AppContext";
-// Layout Components
-import Header from "./components/layout/Header";
-import SlideOutMenu from "./components/layout/SlideOutMenu";
-import Footer from "./components/layout/Footer";
-import Toast from "./components/common/Toast";
-import BottomNavBar from "./components/layout/BottomNavBar";
-// Screen Components
-import AuthScreen from "./screens/AuthScreen";
-import PlaceholderScreen from "./screens/PlaceholderScreen";
-import IntroInfographicScreen from "./screens/IntroInfographicScreen";
-// Resident Screens
-import ResidentDashboard from "./screens/resident/ResidentDashboard";
-import PaymentScreen from "./screens/resident/PaymentScreen";
-import ReservationScreen from "./screens/resident/ReservationScreen";
-import MaintenanceScreen from "./screens/resident/MaintenanceScreen";
-import CommunityScreen from "./screens/resident/CommunityScreen";
-import ProfileScreen from "./screens/resident/ProfileScreen";
-// Admin Screens
-import AdminDashboard from "./screens/admin/AdminDashboard";
-import ResidentManagementScreen from "./screens/admin/ResidentManagementScreen";
-import UserManagementScreen from "./screens/admin/UserManagementScreen";
-import FinanceScreen from "./screens/admin/FinanceScreen";
-import TaskScreen from "./screens/admin/TaskScreen";
+// Layout
+import MainLayout from './components/layout/MainLayout';
+import ProtectedRoute from './components/common/ProtectedRoute';
 
-import BillingBatchWizard from "./screens/admin/BillingBatchWizard";
-import CommunicationScreen from "./screens/admin/CommunicationScreen";
-import ReservationApprovalScreen from "./screens/admin/ReservationApprovalScreen";
+// Pages
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Bills from './pages/Bills';
+import BillDetail from './pages/BillDetail';
+import Payments from './pages/Payments';
+import Announcements from './pages/Announcements';
+import Maintenance from './pages/Maintenance';
+import Reservations from './pages/Reservations';
 
-// --- /src/App.js ---
-// El componente principal de la aplicación se encarga de renderizar la pantalla.
-const AppContent = () => {
-  const { isLoggedIn, persona, activeView } = useAppContext();
-  const renderContent = () => {
-    if (!isLoggedIn && activeView !== "intro") {
-      return <AuthScreen />;
-    }
+// Admin Pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminBilling from './pages/admin/AdminBilling';
+import AdminReports from './pages/admin/AdminReports';
+import AdminUsers from './pages/admin/AdminUsers';
 
-    if (activeView === "intro") {
-      return <IntroInfographicScreen />;
-    }
+function App() {
+  const { isLoading } = useAuth();
 
-    if (persona === "resident") {
-      switch (activeView) {
-        case "intro":
-          return <PlaceholderScreen screenName="Introducción" />;
-        case "auth":
-          return <AuthScreen />;
-        case "dashboard":
-          return <ResidentDashboard />;
-        case "payment":
-          return <PaymentScreen />;
-        case "reservation":
-          return <ReservationScreen />;
-        case "maintenance":
-          return <MaintenanceScreen />;
-        case "community":
-          return <CommunityScreen />;
-        case "profile":
-          return <ProfileScreen />;
-        default:
-          return <ResidentDashboard />;
-      }
-    } else {
-      // admin
-      switch (activeView) {
-        case "intro":
-          return <PlaceholderScreen screenName="Introducción" />;
-        case "auth":
-          return <AuthScreen />;
-        case "dashboard":
-          return <AdminDashboard />;
-        case "user_management":
-          return <UserManagementScreen />;
-        case "resident_management":
-          return <ResidentManagementScreen />;
-        case "finance":
-          return <FinanceScreen />;
-        case "billing_batch":
-          return <BillingBatchWizard />;
-        case "task":
-          return <TaskScreen />;
-        case "reservation_approval":
-          return <ReservationApprovalScreen />;
-        case "communication":
-          return <CommunicationScreen />;
-        default:
-          return <AdminDashboard />;
-      }
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 font-sans">
-      <Header />
-      <SlideOutMenu />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="w-full">{renderContent()}</div>
-      </main>
-      <BottomNavBar />
-      <Toast />
-      <Footer />
-    </div>
-  );
-};
-// --- /src/index.js ---
-// Finalmente, AppProvider envuelve a AppContent para proporcionar el estado a toda la aplicación.
-export default function App() {
-  return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#333',
+            color: '#fff',
+          },
+        }}
+      />
+      
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/login" element={<Login />} />
+        
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<MainLayout />}>
+            {/* Common Routes */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/bills" element={<Bills />} />
+            <Route path="/bills/:id" element={<BillDetail />} />
+            <Route path="/payments" element={<Payments />} />
+            <Route path="/announcements" element={<Announcements />} />
+            <Route path="/maintenance" element={<Maintenance />} />
+            <Route path="/reservations" element={<Reservations />} />
+            
+            {/* Admin Only Routes */}
+            <Route element={<ProtectedRoute adminOnly />}>
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/billing" element={<AdminBilling />} />
+              <Route path="/admin/reports" element={<AdminReports />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+            </Route>
+          </Route>
+        </Route>
+        
+        {/* 404 */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }
+
+export default App;
