@@ -2,7 +2,12 @@ import api from './api';
 
 const authService = {
   async login(credentials) {
-    const response = await api.post('/auth/login', credentials);
+    // Ensure compatibility with both 'id' and 'username' field names
+    const loginData = {
+      username: credentials.username || credentials.id,
+      password: credentials.password
+    };
+    const response = await api.post('/auth/login', loginData);
     return response.data;
   },
 

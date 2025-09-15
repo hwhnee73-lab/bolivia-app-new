@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { useAppContext } from '../contexts/AppContext'; // La ruta puede variar
+import { useAuth } from '../contexts/AuthContext';
+import { useAppContext } from '../contexts/AppContext';
 import PhoneMockup from '../components/common/PhoneMockup';
+import authService from '../services/authService';
 
 const AuthScreen = () => {
+    const { login } = useAuth();
     const { handleLoginSuccess } = useAppContext();
-    const [id, setId] = useState('admin@aa.com');
+    const [username, setUsername] = useState('admin@aa.com');
     const [password, setPassword] = useState('1');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -15,36 +18,18 @@ const AuthScreen = () => {
         setIsLoading(true);
 
         try {
-            // Llamada a la API del backend a través del proxy de Nginx
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id, password }),
-            });
-
-            if (!response.ok) {
-                let errorMsg = "Error en el inicio de sesión. Intente de nuevo.";
-                try {
-                    const errorData = await response.json();
-                    if(errorData && errorData.message) {
-                        errorMsg = errorData.message;
-                    }
-                } catch(e) {
-                    // Si el cuerpo del error no es JSON, usa el mensaje por defecto
-                }
-                throw new Error(errorMsg);
-            }
-
-            const data = await response.json();
+            // Use authService for consistency
+            const result = await login({ username, password });
             
-            // Lógica de éxito: guardar usuario y Access Token en el estado global (Context)
-            // El Refresh Token en la cookie httpOnly es manejado automáticamente por el navegador
-            handleLoginSuccess(data.user, data.accessToken);
-
+            if (result && result.success) {
+                // Handle success with both contexts for compatibility
+                handleLoginSuccess(result.user, localStorage.getItem('accessToken'));
+            } else {
+                setError(result?.error || "Error en el inicio de sesión. Intente de nuevo.");
+            }
         } catch (err) {
-            setError(err.message);
+            console.error('Login error:', err);
+            setError(err.response?.data?.message || err.message || "Error en el inicio de sesión.");
         } finally {
             setIsLoading(false);
         }
@@ -58,9 +43,9 @@ const AuthScreen = () => {
                 {error && <div className="p-3 bg-red-500/50 text-white rounded-lg">{error}</div>}
                 <input 
                     type="text" 
-                    value={id} 
-                    onChange={(e) => setId(e.target.value)} 
-                    placeholder="ID de usuario (o email)" 
+                    value={username} 
+                    onChange={(e) => setUsername(e.target.value)} 
+                    placeholder="Email o nombre de usuario" 
                     className="w-full p-3 rounded bg-gray-600 placeholder-gray-400 text-white border border-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500" 
                     required 
                 />
