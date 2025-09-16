@@ -1,0 +1,31 @@
+# Flyway를 비활성화하여 JPA가 스키마를 직접 관리하도록 함
+spring.flyway.enabled=false
+# 애플리케이션 시작 시 엔티티에 맞게 DB 스키마를 업데이트하도록 설정
+spring.jpa.hibernate.ddl-auto=update
+#spring.flyway.baseline-on-migrate=true
+spring.application.name=backend
+server.servlet.context-path=/api
+# JWT
+jwt.secret=your-very-long-and-secure-secret-key-that-is-at-least-256-bits
+# 1시간
+jwt.access-token-validity-in-seconds=3600
+# 7일
+jwt.refresh-token-validity-in-seconds=604800
+
+#re
+
+# MySQL DB 연결 설정
+spring.datasource.url=jdbc:mysql://mysql-db:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+spring.datasource.username=${MYSQL_USER}
+spring.datasource.password=${MYSQL_PASSWORD}
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# JPA 및 Hibernate 설정
+# 이 부분이 가장 중요합니다! MySQL 8 버전을 사용한다고 명시합니다.
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+spring.jpa.hibernate.ddl-auto=update
+
+# Log all web requests at the TRACE level for detailed debugging
+logging.level.org.springframework.web=TRACE
+# Log Hibernate SQL statements and parameters
+logging.level.org.hibernate.SQL=DEBUG

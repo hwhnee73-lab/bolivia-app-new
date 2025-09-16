@@ -10,6 +10,7 @@ const BottomNavBar = () => {
     { path: '/bills', label: t('nav.bills'), icon: '💰' },
     { path: '/reservations', label: t('nav.reservations'), icon: '📅' },
     { path: '/announcements', label: '공지', icon: '📢' },
+    { path: '/settings', label: '설정', icon: '⚙️' },
   ];
 
   return (
