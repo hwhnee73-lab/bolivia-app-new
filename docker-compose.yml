@@ -30,6 +30,8 @@ services:
       context: ./backend
     container_name: bolivia-backend
     restart: unless-stopped
+    ports: # 이 부분을 추가하세요
+      - "8080:8080"
     environment:
       # ⬇️ DB 접속 URL의 호스트명을 "db"로 명확히 수정했습니다.
       - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/${MYSQL_DATABASE}?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true

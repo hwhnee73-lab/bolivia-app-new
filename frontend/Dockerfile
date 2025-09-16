@@ -6,7 +6,7 @@ WORKDIR /app
 # 의존성 캐싱을 위해 package*.json 파일을 먼저 복사합니다.
 COPY package*.json ./
 # npm ci는 package-lock.json을 기반으로 더 빠르고 안정적으로 설치합니다.
-RUN npm install
+RUN npm ci
 
 # 나머지 소스 코드를 복사하고 빌드를 실행합니다.
 COPY . .
