@@ -61,9 +61,10 @@ public class AuthService {
         // Generate tokens
         String accessToken = tokenProvider.generateAccessToken(authentication);
         String refreshToken = tokenProvider.generateRefreshToken(authentication.getName());
-        
-        // Get user
-        User user = userRepository.findByEmail(authentication.getName())
+
+        // Resolve authenticated principal to the User entity reliably
+        User principal = (User) authentication.getPrincipal();
+        User user = userRepository.findById(principal.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         // Update last login

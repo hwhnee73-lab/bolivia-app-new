@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../../contexts/AppContext'; // La ruta puede variar
 import { callGeminiAPI } from '../../services/geminiApi'; // La ruta puede variar
+import http from '../../services/http';
 
 const CommunicationScreen = () => {
     const { showToast } = useAppContext();
@@ -41,15 +42,7 @@ const CommunicationScreen = () => {
         }
         setIsPublishing(true);
         try {
-            const response = await fetch('/api/announcements', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, content })
-            });
-
-            if (!response.ok) {
-                throw new Error('Falló la publicación del anuncio.');
-            }
+            await http.post('/announcements', { title, content });
             
             showToast("El anuncio ha sido publicado exitosamente.");
             // Limpiar formulario después de publicar
@@ -58,7 +51,8 @@ const CommunicationScreen = () => {
             setContent('');
             setStatus('');
         } catch (err) {
-            showToast(`Error: ${err.message}`);
+            const msg = err?.response?.data?.message || err.message;
+            showToast(`Error: ${msg}`);
         } finally {
             setIsPublishing(false);
         }

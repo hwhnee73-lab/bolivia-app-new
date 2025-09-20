@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAppContext } from "../../contexts/AppContext";
+import http from "../../services/http";
 import Loader from "../../components/common/Loader";
 import ErrorAlert from "../../components/common/ErrorAlert";
 import { useTranslation } from "react-i18next";
@@ -13,7 +14,7 @@ const Step = ({ n, current, label }) => (
 );
 
 const BillingBatchWizard = () => {
-  const { fetchWithAuth, showToast } = useAppContext();
+  const { showToast } = useAppContext();
   const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [file, setFile] = useState(null);
@@ -35,16 +36,9 @@ const BillingBatchWizard = () => {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetchWithAuth("/admin/billing/batch/upload", {
-        method: "POST",
+      const { data } = await http.post("/admin/billing/batch/upload", form, {
         headers: { "Content-Type": "multipart/form-data" },
-        body: form,
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || t("billing.errors.uploadFailed"));
-      }
-      const data = await res.json();
       setPreview(data);
       setStep(2);
     } catch (err) {
@@ -77,16 +71,9 @@ const BillingBatchWizard = () => {
     setError("");
     setConfirmResult(null);
     try {
-      const res = await fetchWithAuth("/admin/billing/batch/confirm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tokenKey: preview.tokenKey }),
+      const { data } = await http.post("/admin/billing/batch/confirm", {
+        tokenKey: preview.tokenKey,
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || t("billing.errors.confirmFailed"));
-      }
-      const data = await res.json();
       setConfirmResult(data);
       showToast(t("billing.success.confirmed"));
       setStep(3);

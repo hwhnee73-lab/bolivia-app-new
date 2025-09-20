@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../contexts/AppContext'; // La ruta puede variar
 import PhoneMockup from '../../components/common/PhoneMockup';
 import HomeButton  from '../../components/common/HomeButton'; // La ruta puede variar
+import http from '../../services/http';
 
 const MaintenanceScreen = () => {
     const { showToast, currentUser } = useAppContext();
@@ -18,14 +19,11 @@ const MaintenanceScreen = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/maintenance-requests');
-            if (!response.ok) {
-                throw new Error('No se pudo cargar la lista de solicitudes.');
-            }
-            const data = await response.json();
+            const { data } = await http.get('/maintenance-requests');
             setRequests(data);
         } catch (err) {
-            setError(err.message);
+            const msg = err?.response?.data?.message || err.message;
+            setError(msg);
         } finally {
             setIsLoading(false);
         }
@@ -43,22 +41,15 @@ const MaintenanceScreen = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('/api/maintenance-requests', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-
-            if (!response.ok) {
-                throw new Error('Falló el registro de la solicitud.');
-            }
+            await http.post('/maintenance-requests', formData);
             
             showToast("Se ha recibido la solicitud de mantenimiento.");
             setIsFormVisible(false);
             setFormData({ category: 'Plomería', description: '' });
             fetchRequests(); // Recargar la lista
         } catch (err) {
-            showToast(`Error: ${err.message}`);
+            const msg = err?.response?.data?.message || err.message;
+            showToast(`Error: ${msg}`);
         }
     };
 

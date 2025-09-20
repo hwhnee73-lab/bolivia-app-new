@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import authService from '../services/authService';
 import toast from 'react-hot-toast';
+import { setAccessToken as setHttpAccessToken, setOnUnauthorized } from '../services/http';
 
 const AuthContext = createContext(null);
 
@@ -31,7 +32,6 @@ export const AuthProvider = ({ children }) => {
       setAccessToken(null);
       setUser(null);
       setIsAuthenticated(false);
-      localStorage.removeItem('accessToken');
       throw error;
     } finally {
       setIsLoading(false);
@@ -40,17 +40,29 @@ export const AuthProvider = ({ children }) => {
 
   // Check for existing session on mount
   useEffect(() => {
+    // Hook unauthorized handling to app-level logout
+    setOnUnauthorized(() => {
+      // Avoid toasts storm; just reset state
+      setHttpAccessToken(null);
+      setAccessToken(null);
+      setUser(null);
+      setIsAuthenticated(false);
+    });
+
     const initAuth = async () => {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        setAccessToken(token);
-        try {
+      try {
+        setIsLoading(true);
+        // Attempt silent refresh using secure httpOnly cookie
+        const res = await authService.refreshToken();
+        if (res?.accessToken) {
+          setHttpAccessToken(res.accessToken);
+          setAccessToken(res.accessToken);
           await getCurrentUser();
-        } catch (error) {
-          // Token is invalid, already cleaned up in getCurrentUser
-          console.log('Session expired or invalid');
+          return;
         }
-      } else {
+      } catch (error) {
+        // no active session; fall through
+      } finally {
         setIsLoading(false);
       }
     };
@@ -64,8 +76,8 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.login(credentials);
       
       if (response.accessToken) {
+        setHttpAccessToken(response.accessToken);
         setAccessToken(response.accessToken);
-        localStorage.setItem('accessToken', response.accessToken);
         setUser(response.user);
         setIsAuthenticated(true);
         toast.success('로그인에 성공했습니다');
@@ -86,10 +98,10 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      setHttpAccessToken(null);
       setAccessToken(null);
       setUser(null);
       setIsAuthenticated(false);
-      localStorage.removeItem('accessToken');
       toast.success('로그아웃되었습니다');
     }
   }, []);
@@ -98,17 +110,17 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.refreshToken();
       if (response.accessToken) {
+        setHttpAccessToken(response.accessToken);
         setAccessToken(response.accessToken);
-        localStorage.setItem('accessToken', response.accessToken);
         return response.accessToken;
       }
     } catch (error) {
       console.error('Token refresh failed:', error);
       // Clean up auth state without calling logout to avoid circular dependency
+      setHttpAccessToken(null);
       setAccessToken(null);
       setUser(null);
       setIsAuthenticated(false);
-      localStorage.removeItem('accessToken');
       return null;
     }
   }, []);

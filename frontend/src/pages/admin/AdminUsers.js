@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const AdminUsers = () => {
   const users = [
@@ -10,7 +11,15 @@ const AdminUsers = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">사용자 관리</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">사용자 관리</h1>
+        <Link
+          to="/admin/users/bulk"
+          className="px-3 py-2 rounded-md bg-primary-600 text-white hover:bg-primary-700"
+        >
+          일괄 등록
+        </Link>
+      </div>
       
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">

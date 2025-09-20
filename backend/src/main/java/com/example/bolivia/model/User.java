@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "LegacyUser")
 @Table(name = "users")
 @Getter @Setter
 @NoArgsConstructor

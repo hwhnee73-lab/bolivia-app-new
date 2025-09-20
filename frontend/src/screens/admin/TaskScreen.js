@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../contexts/AppContext'; // La ruta puede variar
+import http from '../../services/http';
 
 const TaskScreen = () => {
     const { showToast } = useAppContext();
@@ -15,12 +16,11 @@ const TaskScreen = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/admin/tasks');
-            if (!response.ok) throw new Error('No se pudo cargar la lista de solicitudes.');
-            const data = await response.json();
+            const { data } = await http.get('/admin/tasks');
             setRequests(data);
         } catch (err) {
-            setError(err.message);
+            const msg = err?.response?.data?.message || err.message;
+            setError(msg);
         } finally {
             setIsLoading(false);
         }
@@ -42,12 +42,12 @@ const TaskScreen = () => {
     const handleDelete = async (reqId) => {
         if (window.confirm("¿Realmente desea eliminar esta solicitud?")) {
             try {
-                const response = await fetch(`/api/admin/tasks/${reqId}`, { method: 'DELETE' });
-                if (!response.ok) throw new Error('No se pudo eliminar la solicitud.');
+                await http.delete(`/admin/tasks/${reqId}`);
                 showToast("La solicitud ha sido eliminada.");
                 fetchRequests(); // Recargar la lista
             } catch (err) {
-                showToast(`Error: ${err.message}`);
+                const msg = err?.response?.data?.message || err.message;
+                showToast(`Error: ${msg}`);
             }
         }
     };
@@ -61,24 +61,20 @@ const TaskScreen = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = editingRequest ? `/api/admin/tasks/${editingRequest.id}` : '/api/admin/tasks';
-        const method = editingRequest ? 'PUT' : 'POST';
+        const url = editingRequest ? `/admin/tasks/${editingRequest.id}` : '/admin/tasks';
 
         try {
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.message || 'La operación falló.');
+            if (editingRequest) {
+                await http.put(url, formData);
+            } else {
+                await http.post(url, formData);
             }
             showToast(editingRequest ? "La solicitud ha sido actualizada." : "Se ha registrado una nueva solicitud.");
             setIsFormVisible(false);
             fetchRequests(); // Recargar la lista
         } catch (err) {
-            showToast(`Error: ${err.message}`);
+            const msg = err?.response?.data?.message || err.message;
+            showToast(`Error: ${msg}`);
         }
     };
 

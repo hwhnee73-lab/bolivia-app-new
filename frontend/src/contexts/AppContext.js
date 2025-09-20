@@ -51,12 +51,8 @@ export const AppProvider = ({ children }) => {
             ...options.headers,
         };
 
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        const response = await fetch(url, { ...options, headers });
+        // Use cookie-based session only; do not attach tokens from storage
+        const response = await fetch(url, { ...options, headers, credentials: 'include' });
 
         // 토큰 만료 등의 401 Unauthorized 에러 발생 시 자동 로그아웃 처리
         if (response.status === 401) {

@@ -2,6 +2,8 @@ package com.bolivia.app.controller;
 
 import com.bolivia.app.dto.auth.LoginRequest;
 import com.bolivia.app.dto.auth.LoginResponse;
+import com.bolivia.app.dto.user.UserDto;
+import com.bolivia.app.entity.User;
 import com.bolivia.app.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -85,7 +87,12 @@ public class AuthController {
     }
     
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(userDetails);
+    public ResponseEntity<UserDto> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).build();
+        }
+        // CustomUserDetailsService returns our User entity as UserDetails
+        User user = (User) userDetails;
+        return ResponseEntity.ok(UserDto.fromEntity(user));
     }
 }

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../contexts/AppContext'; // La ruta puede variar
 import PhoneMockup from '../../components/common/PhoneMockup';
 import HomeButton from '../../components/common/HomeButton'; // La ruta puede variar
+import http from '../../services/http';
 
 const ProfileScreen = () => {
     const { showToast, handleLogout, currentUser, setCurrentUser } = useAppContext();
@@ -32,18 +33,7 @@ const ProfileScreen = () => {
     const handleSave = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch('/api/users/profile', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Error al guardar el perfil.');
-            }
-
-            const updatedProfile = await response.json();
+            const { data: updatedProfile } = await http.put('/users/profile', formData);
 
             // Actualiza el estado global del usuario con la nueva información
             setCurrentUser(prev => ({ ...prev, ...updatedProfile }));
@@ -51,7 +41,8 @@ const ProfileScreen = () => {
             showToast("El perfil ha sido actualizado exitosamente.");
 
         } catch (error) {
-            showToast(`Error: ${error.message}`);
+            const msg = error?.response?.data?.message || error.message;
+            showToast(`Error: ${msg}`);
         } finally {
             setIsLoading(false);
         }

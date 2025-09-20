@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { t, i18n } = useTranslation();
 
   const menuItems = [
@@ -92,8 +92,11 @@ const Settings = () => {
 
   const handleLogout = async () => {
     if (window.confirm('로그아웃 하시겠습니까?')) {
-      // Logout logic here
-      navigate('/login');
+      try {
+        await logout();
+      } finally {
+        navigate('/login');
+      }
     }
   };
 

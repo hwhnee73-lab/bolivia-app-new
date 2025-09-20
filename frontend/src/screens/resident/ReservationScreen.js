@@ -4,6 +4,7 @@ import { useAppContext } from '../../contexts/AppContext'; // La ruta puede vari
 import PhoneMockup from '../../components/common/PhoneMockup';
 import Modal from '../../components/common/Modal'; // La ruta puede variar
 import HomeButton from '../../components/common/HomeButton'; // La ruta puede variar
+import http from '../../services/http';
 
 const ReservationScreen = () => {
     const { showToast } = useAppContext();
@@ -21,19 +22,15 @@ const ReservationScreen = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const [facilitiesRes, reservationsRes] = await Promise.all([
-                fetch('/api/facilities'),
-                fetch('/api/reservations')
+            const [{ data: facilitiesData }, { data: reservationsData }] = await Promise.all([
+                http.get('/facilities'),
+                http.get('/reservations')
             ]);
-            if (!facilitiesRes.ok || !reservationsRes.ok) {
-                throw new Error('No se pudieron cargar los datos de reserva.');
-            }
-            const facilitiesData = await facilitiesRes.json();
-            const reservationsData = await reservationsRes.json();
             setFacilities(facilitiesData);
             setReservations(reservationsData);
         } catch (err) {
-            setError(err.message);
+            const msg = err?.response?.data?.message || err.message;
+            setError(msg);
         } finally {
             setIsLoading(false);
         }
@@ -59,22 +56,18 @@ const ReservationScreen = () => {
         const endDateTime = `${reservationDate}T${endTime.trim()}`;
 
         try {
-            const response = await fetch('/api/reservations', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    facilityId: selectedFacility.id,
-                    startTime: startDateTime,
-                    endTime: endDateTime,
-                })
+            await http.post('/reservations', {
+                facilityId: selectedFacility.id,
+                startTime: startDateTime,
+                endTime: endDateTime,
             });
-            if (!response.ok) throw new Error("No se pudo crear la reserva.");
 
             setIsModalOpen(false);
             showToast(`La solicitud de reserva para ${selectedFacility.name} ha sido enviada.`);
             fetchAllData(); // Recargar datos
         } catch (err) {
-            showToast(`Error: ${err.message}`);
+            const msg = err?.response?.data?.message || err.message;
+            showToast(`Error: ${msg}`);
         }
     };
     
@@ -82,15 +75,13 @@ const ReservationScreen = () => {
         if (!window.confirm("¿Está seguro de que desea cancelar esta reserva?")) return;
 
         try {
-            const response = await fetch(`/api/reservations/${reservationId}/cancel`, {
-                method: 'PUT'
-            });
-            if (!response.ok) throw new Error("No se pudo cancelar la reserva.");
+            await http.put(`/reservations/${reservationId}/cancel`);
             
             showToast("La reserva ha sido cancelada.");
             fetchAllData(); // Recargar datos
         } catch (err) {
-            showToast(`Error: ${err.message}`);
+            const msg = err?.response?.data?.message || err.message;
+            showToast(`Error: ${msg}`);
         }
     };
 

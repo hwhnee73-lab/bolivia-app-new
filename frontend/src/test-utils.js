@@ -1,9 +1,18 @@
 import React from "react";
 import { render } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
 import { AppProvider } from "./contexts/AppContext";
+import { AuthProvider } from "./contexts/AuthContext";
 
 export const renderWithProvider = (ui, options) => {
-  return render(<AppProvider>{ui}</AppProvider>, options);
+  return render(
+    <BrowserRouter>
+      <AuthProvider>
+        <AppProvider>{ui}</AppProvider>
+      </AuthProvider>
+    </BrowserRouter>,
+    options,
+  );
 };
 
 export const mockFetch = (json, ok = true, status = 200) => {

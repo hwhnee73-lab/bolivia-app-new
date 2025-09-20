@@ -99,3 +99,8 @@ configurations.all {
     }
   }
 }
+
+// build.gradle 파일 하단에 추가
+bootJar {
+    mainClass = 'com.bolivia.app.BoliviaApplication'
+}

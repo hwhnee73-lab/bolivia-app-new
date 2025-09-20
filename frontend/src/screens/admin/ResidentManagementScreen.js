@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../contexts/AppContext'; // La ruta puede variar
+import http from '../../services/http';
 
 const ResidentManagementScreen = () => {
-    // --- 수정된 부분 1: useAppContext에서 fetchWithAuth 가져오기 ---
-    const { showToast, fetchWithAuth } = useAppContext();
+    const { showToast } = useAppContext();
     const [bills, setBills] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -17,13 +17,11 @@ const ResidentManagementScreen = () => {
         setIsLoading(true);
         setError(null);
         try {
-            // --- 수정된 부분 2: fetch를 fetchWithAuth로 변경 ---
-            const response = await fetchWithAuth('/api/admin/bills');
-            if (!response.ok) throw new Error('No se pudo cargar la lista de facturas.');
-            const data = await response.json();
+            const { data } = await http.get('/admin/bills');
             setBills(data);
         } catch (err) {
-            setError(err.message);
+            const msg = err?.response?.data?.message || err.message;
+            setError(msg);
         } finally {
             setIsLoading(false);
         }
@@ -46,13 +44,12 @@ const ResidentManagementScreen = () => {
         // 참고: window.confirm 대신 Modal 컴포넌트를 사용하면 더 나은 UX를 제공할 수 있습니다.
         if (window.confirm("¿Realmente desea eliminar esta factura?")) {
             try {
-                // --- 수정된 부분 3: fetch를 fetchWithAuth로 변경 ---
-                const response = await fetchWithAuth(`/api/admin/bills/${billId}`, { method: 'DELETE' });
-                if (!response.ok) throw new Error('No se pudo eliminar la factura.');
+                await http.delete(`/admin/bills/${billId}`);
                 showToast("La factura ha sido eliminada.");
                 fetchBills(); // Recargar la lista
             } catch (err) {
-                showToast(`Error: ${err.message}`);
+                const msg = err?.response?.data?.message || err.message;
+                showToast(`Error: ${msg}`);
             }
         }
     };
@@ -65,25 +62,20 @@ const ResidentManagementScreen = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = editingBill ? `/api/admin/bills/${editingBill.id}` : '/api/admin/bills';
-        const method = editingBill ? 'PUT' : 'POST';
+        const url = editingBill ? `/admin/bills/${editingBill.id}` : '/admin/bills';
 
         try {
-            // --- 수정된 부분 4: fetch를 fetchWithAuth로 변경 ---
-            const response = await fetchWithAuth(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.message || 'La operación falló.');
+            if (editingBill) {
+                await http.put(url, formData);
+            } else {
+                await http.post(url, formData);
             }
             showToast(editingBill ? "La factura ha sido actualizada." : "Se ha registrado una nueva factura.");
             setIsFormVisible(false);
             fetchBills(); // Recargar la lista
         } catch (err) {
-            showToast(`Error: ${err.message}`);
+            const msg = err?.response?.data?.message || err.message;
+            showToast(`Error: ${msg}`);
         }
     };
 

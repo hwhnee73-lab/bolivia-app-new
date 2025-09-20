@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../contexts/AppContext'; // La ruta puede variar
+import http from '../../services/http';
 
 const UserManagementScreen = () => {
     const { showToast } = useAppContext();
@@ -17,12 +18,11 @@ const UserManagementScreen = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/admin/users');
-            if (!response.ok) throw new Error('No se pudo cargar la lista de usuarios.');
-            const data = await response.json();
+            const { data } = await http.get('/admin/users');
             setUsers(data);
         } catch (err) {
-            setError(err.message);
+            const msg = err?.response?.data?.message || err.message;
+            setError(msg);
         } finally {
             setIsLoading(false);
         }
@@ -44,12 +44,12 @@ const UserManagementScreen = () => {
     const handleDelete = async (userId) => {
         if (window.confirm("¿Realmente desea eliminar este usuario?")) {
             try {
-                const response = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
-                if (!response.ok) throw new Error('No se pudo eliminar el usuario.');
+                await http.delete(`/admin/users/${userId}`);
                 showToast("El usuario ha sido eliminado.");
                 fetchUsers(); // Recargar la lista
             } catch (err) {
-                showToast(`Error: ${err.message}`);
+                const msg = err?.response?.data?.message || err.message;
+                showToast(`Error: ${msg}`);
             }
         }
     };
@@ -63,24 +63,20 @@ const UserManagementScreen = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = editingUser ? `/api/admin/users/${editingUser.id}` : '/api/admin/users';
-        const method = editingUser ? 'PUT' : 'POST';
+        const url = editingUser ? `/admin/users/${editingUser.id}` : '/admin/users';
 
         try {
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.message || 'La operación falló.');
+            if (editingUser) {
+                await http.put(url, formData);
+            } else {
+                await http.post(url, formData);
             }
             showToast(editingUser ? "La información del usuario ha sido actualizada." : "Se ha registrado un nuevo usuario.");
             setIsFormVisible(false);
             fetchUsers(); // Recargar la lista
         } catch (err) {
-            showToast(`Error: ${err.message}`);
+            const msg = err?.response?.data?.message || err.message;
+            showToast(`Error: ${msg}`);
         }
     };
 

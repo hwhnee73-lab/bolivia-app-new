@@ -21,6 +21,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/admin/billing', label: '일괄 청구', icon: '📋' },
     { path: '/admin/reports', label: '재무 리포트', icon: '📈' },
     { path: '/admin/users', label: '사용자 관리', icon: '👥' },
+    { path: '/admin/users/bulk', label: '사용자 일괄등록', icon: '🗂️' },
   ];
 
   const NavItem = ({ item }) => (

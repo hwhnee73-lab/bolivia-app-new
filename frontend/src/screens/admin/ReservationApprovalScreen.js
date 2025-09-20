@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../contexts/AppContext'; // La ruta puede variar
+import http from '../../services/http';
 
 const ReservationApprovalScreen = () => {
     const { showToast } = useAppContext();
@@ -12,14 +13,11 @@ const ReservationApprovalScreen = () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/admin/reservations');
-            if (!response.ok) {
-                throw new Error('No se pudo cargar la lista de reservas.');
-            }
-            const data = await response.json();
+            const { data } = await http.get('/admin/reservations');
             setReservations(data);
         } catch (err) {
-            setError(err.message);
+            const msg = err?.response?.data?.message || err.message;
+            setError(msg);
         } finally {
             setIsLoading(false);
         }
@@ -31,22 +29,15 @@ const ReservationApprovalScreen = () => {
 
     const handleStatusChange = async (id, newStatus) => {
         try {
-            const response = await fetch(`/api/admin/reservations/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus })
-            });
-
-            if (!response.ok) {
-                throw new Error('No se pudo actualizar el estado.');
-            }
+            await http.put(`/admin/reservations/${id}`, { status: newStatus });
             
             // Actualiza el estado en la UI inmediatamente para una mejor experiencia de usuario
             setReservations(reservations.map(r => r.id === id ? { ...r, status: newStatus } : r));
             showToast(`La reserva ha sido marcada como ${newStatus.toLowerCase()}.`);
 
         } catch (err) {
-            showToast(`Error: ${err.message}`);
+            const msg = err?.response?.data?.message || err.message;
+            showToast(`Error: ${msg}`);
         }
     };
 

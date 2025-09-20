@@ -1,6 +1,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
+import http from '../../services/http';
 
 const FinanceScreen = () => {
     const chartContainer = useRef(null);
@@ -16,14 +17,11 @@ const FinanceScreen = () => {
                 //const response = await fetch('/api/finance/summary?month=2025-07');
                 const now = new Date();
                 const month = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-                const response = await fetch(`/api/finance/summary?month=${month}`);
-                if (!response.ok) {
-                    throw new Error('No se pudo cargar el resumen financiero.');
-                }
-                const data = await response.json();
+                const { data } = await http.get('/finance/summary', { params: { month } });
                 setSummary(data);
             } catch (err) {
-                setError(err.message);
+                const msg = err?.response?.data?.message || err.message;
+                setError(msg);
             } finally {
                 setIsLoading(false);
             }

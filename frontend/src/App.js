@@ -23,6 +23,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminBilling from './pages/admin/AdminBilling';
 import AdminReports from './pages/admin/AdminReports';
 import AdminUsers from './pages/admin/AdminUsers';
+import UserBulkImport from './pages/admin/UserBulkImport';
 
 function App() {
   const { isLoading } = useAuth();
@@ -72,6 +73,7 @@ function App() {
               <Route path="/admin/billing" element={<AdminBilling />} />
               <Route path="/admin/reports" element={<AdminReports />} />
               <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/users/bulk" element={<UserBulkImport />} />
             </Route>
           </Route>
         </Route>

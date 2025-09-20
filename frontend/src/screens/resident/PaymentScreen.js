@@ -4,6 +4,7 @@ import { useAppContext } from '../../contexts/AppContext'; // La ruta puede vari
 import PhoneMockup from '../../components/common/PhoneMockup';
 import Modal  from '../../components/common/Modal'; // La ruta puede variar
 import HomeButton from '../../components/common/HomeButton'; // La ruta puede variar
+import http from '../../services/http';
 
 const PaymentScreen = () => {
     const { showToast } = useAppContext();
@@ -19,15 +20,11 @@ const PaymentScreen = () => {
     useEffect(() => {
         const fetchBills = async () => {
             try {
-                // Llamada a la API del backend a través del proxy de Nginx
-                const response = await fetch('/api/bills');
-                if (!response.ok) {
-                    throw new Error('No se pudo cargar la información de las facturas.');
-                }
-                const data = await response.json();
+                const { data } = await http.get('/bills');
                 setBills(data);
             } catch (err) {
-                setError(err.message);
+                const msg = err?.response?.data?.message || err.message;
+                setError(msg);
             } finally {
                 setIsLoading(false);
             }
@@ -45,16 +42,7 @@ const PaymentScreen = () => {
         showToast("Procesando el pago...");
 
         try {
-            const response = await fetch('/api/payments', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ billId: payingBillId })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'El pago falló.');
-            }
+            await http.post('/payments', { billId: payingBillId });
             
             // Si el pago es exitoso, actualiza el estado de la factura en la UI a 'Pagado'
             setBills(prevBills => 
@@ -65,7 +53,8 @@ const PaymentScreen = () => {
             showToast("¡Pago completado con éxito!");
 
         } catch (err) {
-            showToast(`Error: ${err.message}`);
+            const msg = err?.response?.data?.message || err.message;
+            showToast(`Error: ${msg}`);
         } finally {
             setPayingBillId(null);
         }

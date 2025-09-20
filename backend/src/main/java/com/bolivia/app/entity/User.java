@@ -24,6 +24,7 @@ public class User extends BaseEntity implements UserDetails {
     private Household household;
     
     @Column(name = "apt_code", nullable = false, length = 32)
+    @Builder.Default
     private String aptCode = "BOLIVIA";
     
     @Column(name = "dong", nullable = false, length = 10)
@@ -49,10 +50,12 @@ public class User extends BaseEntity implements UserDetails {
     
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
+    @Builder.Default
     private UserRole role = UserRole.RESIDENT;
     
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
+    @Builder.Default
     private UserStatus status = UserStatus.PENDING;
     
     @Column(name = "last_login_at")
