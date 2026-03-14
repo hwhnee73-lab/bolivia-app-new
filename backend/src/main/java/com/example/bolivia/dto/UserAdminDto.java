@@ -1,39 +1,46 @@
 package com.example.bolivia.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.util.List;
 
 public class UserAdminDto {
 
-    // DTO para obtener la lista de usuarios para el administrador
-    @Getter @Setter
-    @AllArgsConstructor
-    public static class UserDetail {
-        private Long id;
-        private String displayName;
-        private String email;
-        private String username; // ID de Sesión (autogenerado)
-        private String role;
-        private String status;
-        // Campos adicionales para el formulario de edición
+    public record UserDetail(
+            Long id,
+            String displayName,
+            String email,
+            String username,
+            String role,
+            String status,
+            String aptCode,
+            String dong,
+            String ho
+    ) {}
+
+    public static class UserRequest {
         private String aptCode;
         private String dong;
         private String ho;
-    }
-
-    // DTO para la solicitud de creación o actualización de un usuario
-    @Getter @Setter
-    @NoArgsConstructor
-    public static class UserRequest {
         private String displayName;
         private String email;
-        private String aptCode = "default"; // Valor por defecto
-        private String dong;
-        private String ho;
+        private String password;
         private String role;
         private String status;
-        private String password; // Para registrar nuevos usuarios
+
+        public String getAptCode() { return aptCode; }
+        public void setAptCode(String aptCode) { this.aptCode = aptCode; }
+        public String getDong() { return dong; }
+        public void setDong(String dong) { this.dong = dong; }
+        public String getHo() { return ho; }
+        public void setHo(String ho) { this.ho = ho; }
+        public String getDisplayName() { return displayName; }
+        public void setDisplayName(String displayName) { this.displayName = displayName; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+        public String getRole() { return role; }
+        public void setRole(String role) { this.role = role; }
+        public String getStatus() { return status; }
+        public void setStatus(String status) { this.status = status; }
     }
 }

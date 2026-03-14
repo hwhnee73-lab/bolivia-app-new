@@ -17,6 +17,7 @@ public class TaskAdminService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Transactional(readOnly = true)
     public List<TaskAdminDto.TaskDetail> getAllRequests() {
         String sql = "SELECT mr.id, CONCAT(u.display_name, ' (', h.building_number, '-', h.unit_number, ')') as requester_name, " +
                      "mr.category, mr.description, mr.status, mr.created_at " +

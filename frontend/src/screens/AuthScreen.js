@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useAppContext } from '../contexts/AppContext';
 import PhoneMockup from '../components/common/PhoneMockup';
-import authService from '../services/authService';
 
 const AuthScreen = () => {
     const { login } = useAuth();
@@ -23,7 +22,7 @@ const AuthScreen = () => {
             
             if (result && result.success) {
                 // Handle success with both contexts for compatibility
-                handleLoginSuccess(result.user, localStorage.getItem('accessToken'));
+                handleLoginSuccess(result.user);
             } else {
                 setError(result?.error || "Error en el inicio de sesión. Intente de nuevo.");
             }

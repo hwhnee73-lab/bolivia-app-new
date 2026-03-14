@@ -1,0 +1,3 @@
+-- Add cost column to maintenance_requests (nullable)
+--ALTER TABLE maintenance_requests
+--  ADD COLUMN IF NOT EXISTS cost DECIMAL(12,2) NOT NULL DEFAULT 0 COMMENT '처리 비용';

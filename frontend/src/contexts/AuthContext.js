@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoading(true);
       const response = await authService.login(credentials);
-      
+
       if (response.accessToken) {
         setHttpAccessToken(response.accessToken);
         setAccessToken(response.accessToken);

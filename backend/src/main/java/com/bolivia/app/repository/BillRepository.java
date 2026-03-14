@@ -26,8 +26,9 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     
     List<Bill> findByStatus(Bill.BillStatus status);
     
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"household"})
     @Query("SELECT b FROM Bill b WHERE b.dueDate < :date AND b.status != 'PAID'")
-    List<Bill> findOverdueBills(@Param("date") LocalDate date);
+    Page<Bill> findOverdueBills(@Param("date") LocalDate date, Pageable pageable);
     
     @Query("SELECT SUM(b.totalAmount) FROM Bill b WHERE b.billMonth = :month")
     Double getTotalAmountByMonth(@Param("month") String month);

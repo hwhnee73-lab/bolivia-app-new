@@ -1,5 +1,17 @@
 import axios from "axios";
 
+// Build-time configurable API base URL.
+// When REACT_APP_API_URL is not provided we default to the relative `/api`
+// path so Nginx (or CRA proxy) can forward requests as before.
+const normalizeBaseUrl = (value, fallback = "/api") => {
+  if (!value || !value.trim()) return fallback;
+  const trimmed = value.trim();
+  if (trimmed === "/") return "/";
+  return trimmed.endsWith("/") ? trimmed.slice(0, -1) : trimmed;
+};
+
+const API_BASE_URL = normalizeBaseUrl(process.env.REACT_APP_API_URL);
+
 // In-memory Access Token (no storage at rest)
 let accessToken = null;
 let isRefreshing = false;
@@ -16,13 +28,13 @@ export const setOnUnauthorized = (handler) => {
 
 // Base HTTP client for app APIs
 const http = axios.create({
-  baseURL: "/api",
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
 // Separate client for token refresh to avoid Authorization header coupling
 const refreshClient = axios.create({
-  baseURL: "/api",
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
@@ -81,7 +93,7 @@ http.interceptors.response.use(
         if (onUnauthorized) {
           try {
             onUnauthorized();
-          } catch (_) {}
+          } catch (_) { }
         }
         return Promise.reject(e);
       }

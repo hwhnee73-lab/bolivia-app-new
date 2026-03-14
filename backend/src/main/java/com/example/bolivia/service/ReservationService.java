@@ -19,6 +19,7 @@ public class ReservationService {
         this.userRepository = userRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<ReservationDto.Facility> listFacilities() {
         String sql = "SELECT id, name, COALESCE(description,'') AS description FROM facilities ORDER BY name";
         return jdbcTemplate.query(sql, (rs, rn) -> new ReservationDto.Facility(
@@ -26,6 +27,7 @@ public class ReservationService {
         ));
     }
 
+    @Transactional(readOnly = true)
     public List<ReservationDto.ReservationDetail> listMyReservations(Long userId) {
         String sql = "SELECT r.id, f.name AS facility_name, r.start_time, r.end_time, r.status " +
                 "FROM reservations r JOIN facilities f ON r.facility_id = f.id " +

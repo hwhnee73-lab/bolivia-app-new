@@ -8,6 +8,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -30,6 +31,7 @@ public class FinanceService {
         this.resourceLoader = resourceLoader;
     }
 
+    @Transactional(readOnly = true)
     public List<FinanceDto.ExpenseBreakdown> getExpenses() {
         String sql = "SELECT b.bill_month AS ym, bi.item_name, SUM(bi.amount) AS total " +
                 "FROM bill_items bi JOIN bills b ON bi.bill_id = b.id " +
@@ -39,6 +41,7 @@ public class FinanceService {
         ));
     }
 
+    @Transactional(readOnly = true)
     public List<FinanceDto.TimeSeriesEntry> getIncomes() {
         String sql = "SELECT DATE_FORMAT(payment_date, '%Y-%m') AS ym, SUM(amount) AS total " +
                 "FROM payments GROUP BY DATE_FORMAT(payment_date, '%Y-%m') ORDER BY ym DESC";
@@ -47,6 +50,7 @@ public class FinanceService {
         ));
     }
 
+    @Transactional(readOnly = true)
     public List<FinanceDto.DelinquencyEntry> getDelinquency(String fromYm, String toYm) {
         YearMonth from = YearMonth.parse(fromYm);
         YearMonth to = YearMonth.parse(toYm);
@@ -68,6 +72,7 @@ public class FinanceService {
         return list;
     }
 
+    @Transactional(readOnly = true)
     public byte[] generateStatementPdf(Long householdId) {
         // Query basic data
         String hh = jdbcTemplate.queryForObject(

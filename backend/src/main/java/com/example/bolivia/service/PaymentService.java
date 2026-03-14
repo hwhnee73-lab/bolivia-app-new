@@ -19,6 +19,7 @@ public class PaymentService {
     }
 
     // Método para obtener la lista de facturas y sus detalles para un usuario
+    @Transactional(readOnly = true)
     public List<BillDto.BillInfo> getBillsForUser(Long userId) {
         // 1. Obtener el household_id del usuario
         String householdSql = "SELECT household_id FROM users WHERE id = ?";
@@ -42,10 +43,16 @@ public class PaymentService {
         // 3. Obtener los detalles de todas las facturas en una sola consulta para optimizar
         if (!bills.isEmpty()) {
             List<Long> billIds = bills.stream().map(BillDto.BillInfo::getId).collect(Collectors.toList());
-            String itemsSql = "SELECT bill_id, item_name, amount FROM bill_items WHERE bill_id IN (" +
-                              billIds.stream().map(String::valueOf).collect(Collectors.joining(",")) + ")";
+            org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate namedJdbcTemplate = 
+                    new org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate(jdbcTemplate);
+                    
+            String itemsSql = "SELECT bill_id, item_name, amount FROM bill_items WHERE bill_id IN (:billIds)";
             
-            Map<Long, List<BillDto.BillItemInfo>> itemsMap = jdbcTemplate.query(itemsSql, rs -> {
+            org.springframework.jdbc.core.namedparam.MapSqlParameterSource parameters = 
+                    new org.springframework.jdbc.core.namedparam.MapSqlParameterSource();
+            parameters.addValue("billIds", billIds);
+            
+            Map<Long, List<BillDto.BillItemInfo>> itemsMap = namedJdbcTemplate.query(itemsSql, parameters, rs -> {
                 Map<Long, List<BillDto.BillItemInfo>> map = new java.util.HashMap<>();
                 while (rs.next()) {
                     Long billId = rs.getLong("bill_id");
@@ -98,6 +105,7 @@ public class PaymentService {
     }
 
     // Historial de pagos del usuario actual
+    @Transactional(readOnly = true)
     public java.util.List<com.example.bolivia.dto.BillDto.PaymentInfo> getPaymentHistory(Long userId) {
         String sql = "SELECT id, bill_id, amount, payment_method, payment_date FROM payments WHERE user_id = ? ORDER BY payment_date DESC";
         return jdbcTemplate.query(sql, (rs, rn) -> new com.example.bolivia.dto.BillDto.PaymentInfo(
@@ -110,6 +118,7 @@ public class PaymentService {
     }
 
     // PDF de recibo (muestra)
+    @Transactional(readOnly = true)
     public byte[] generateReceiptPdf(Long userId, Long paymentId) {
         String checkSql = "SELECT p.id, p.amount, p.payment_method, p.payment_date, b.bill_month, h.building_number, h.unit_number " +
                 "FROM payments p JOIN bills b ON p.bill_id = b.id JOIN users u ON p.user_id = u.id " +

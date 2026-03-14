@@ -21,6 +21,7 @@ public class UserAdminService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional(readOnly = true)
     public List<UserAdminDto.UserDetail> getAllUsers() {
         return userRepository.findAll(Sort.by(Sort.Direction.DESC, "id")).stream()
                 .map(user -> new UserAdminDto.UserDetail(

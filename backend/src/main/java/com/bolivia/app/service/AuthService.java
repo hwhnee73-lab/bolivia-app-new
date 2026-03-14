@@ -146,26 +146,26 @@ public class AuthService {
     }
     
     private void setRefreshTokenCookie(HttpServletResponse response, String token) {
-        Cookie cookie = new Cookie("refreshToken", token);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(cookieSecure);
-        cookie.setPath("/api/auth");
-        cookie.setMaxAge((int) (refreshTokenExpiration / 1000));
-        if (!cookieDomain.equals("localhost")) {
-            cookie.setDomain(cookieDomain);
-        }
-        response.addCookie(cookie);
+        org.springframework.http.ResponseCookie cookie = org.springframework.http.ResponseCookie.from("refreshToken", token)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/api/auth")
+                .maxAge(refreshTokenExpiration / 1000)
+                .sameSite("Strict")
+                .domain(!cookieDomain.equals("localhost") ? cookieDomain : null)
+                .build();
+        response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, cookie.toString());
     }
     
     private void clearRefreshTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie("refreshToken", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(cookieSecure);
-        cookie.setPath("/api/auth");
-        cookie.setMaxAge(0);
-        if (!cookieDomain.equals("localhost")) {
-            cookie.setDomain(cookieDomain);
-        }
-        response.addCookie(cookie);
+        org.springframework.http.ResponseCookie cookie = org.springframework.http.ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/api/auth")
+                .maxAge(0)
+                .sameSite("Strict")
+                .domain(!cookieDomain.equals("localhost") ? cookieDomain : null)
+                .build();
+        response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }

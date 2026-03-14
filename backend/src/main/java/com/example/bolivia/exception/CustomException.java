@@ -1,6 +1,5 @@
 package com.example.bolivia.exception;
 
-// 프로젝트 전반에서 사용할 커스텀 예외 클래스
 public class CustomException extends RuntimeException {
     private final ErrorCode errorCode;
 
@@ -9,7 +8,10 @@ public class CustomException extends RuntimeException {
         this.errorCode = errorCode;
     }
 
-    public ErrorCode getErrorCode() {
-        return errorCode;
+    public CustomException(ErrorCode errorCode, String message) {
+        super(message);
+        this.errorCode = errorCode;
     }
+
+    public ErrorCode getErrorCode() { return errorCode; }
 }

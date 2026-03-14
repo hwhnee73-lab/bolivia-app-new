@@ -1,37 +1,53 @@
 package com.example.bolivia.dto;
 
 import com.example.bolivia.model.User;
-import lombok.Getter;
-import lombok.Setter;
 
 public class AuthDto {
-    @Getter @Setter
+
     public static class LoginRequest {
-        private String id; // Coincide con el 'id' enviado desde React
+        private String id;
         private String password;
+
+        public String getId() { return id; }
+        public void setId(String id) { this.id = id; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
     }
 
-    @Getter
     public static class LoginResponse {
         private String accessToken;
         private UserInfo user;
-        public LoginResponse(String accessToken, User userEntity) {
+
+        public LoginResponse(String accessToken, User user) {
             this.accessToken = accessToken;
-            this.user = new UserInfo(userEntity);
+            this.user = new UserInfo(
+                    user.getId(),
+                    user.getDisplayName(),
+                    user.getEmail(),
+                    user.getRole().name()
+            );
         }
+
+        public String getAccessToken() { return accessToken; }
+        public UserInfo getUser() { return user; }
     }
 
-    @Getter
     public static class UserInfo {
         private Long id;
-        private String displayName, username, email, role, status;
-        public UserInfo(User user) {
-            this.id = user.getId();
-            this.displayName = user.getDisplayName();
-            this.username = user.getUsername();
-            this.email = user.getEmail();
-            this.role = user.getRole().name();
-            this.status = user.getStatus().name();
+        private String displayName;
+        private String email;
+        private String role;
+
+        public UserInfo(Long id, String displayName, String email, String role) {
+            this.id = id;
+            this.displayName = displayName;
+            this.email = email;
+            this.role = role;
         }
+
+        public Long getId() { return id; }
+        public String getDisplayName() { return displayName; }
+        public String getEmail() { return email; }
+        public String getRole() { return role; }
     }
 }

@@ -55,10 +55,9 @@ public class BillService {
     }
     
     @Transactional(readOnly = true)
-    public List<BillDto> getOverdueBills() {
-        return billRepository.findOverdueBills(LocalDate.now()).stream()
-                .map(BillDto::fromEntity)
-                .collect(Collectors.toList());
+    public Page<BillDto> getOverdueBills(Pageable pageable) {
+        return billRepository.findOverdueBills(LocalDate.now(), pageable)
+                .map(BillDto::fromEntity);
     }
     
     @Transactional(readOnly = true)

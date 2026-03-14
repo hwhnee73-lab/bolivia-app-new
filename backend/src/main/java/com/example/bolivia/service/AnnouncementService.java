@@ -3,6 +3,7 @@ package com.example.bolivia.service;
 import com.example.bolivia.dto.CommunicationDto;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AnnouncementService {
@@ -13,12 +14,9 @@ public class AnnouncementService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    // Método para crear un nuevo anuncio en la tabla 'announcements'
-    public void createAnnouncement(Long authorId, CommunicationDto communicationDto) {
-        // La tabla correcta es 'announcements', no 'community_posts' para esta función de administrador
-        String sql = "INSERT INTO announcements (author_id, title, content, created_at, updated_at) " +
-                     "VALUES (?, ?, ?, NOW(), NOW())";
-        
-        jdbcTemplate.update(sql, authorId, communicationDto.getTitle(), communicationDto.getContent());
+    @Transactional
+    public void createAnnouncement(Long adminId, CommunicationDto dto) {
+        String sql = "INSERT INTO announcements (title, content, category, created_by) VALUES (?, ?, ?, ?)";
+        jdbcTemplate.update(sql, dto.getTitle(), dto.getContent(), dto.getCategory(), adminId);
     }
 }

@@ -17,6 +17,7 @@ public class MaintenanceService {
     }
 
     // 내 신고 목록/상태 조회
+    @Transactional(readOnly = true)
     public List<MaintenanceDto.TaskDetail> listMyTasks(Long userId) {
         String sql = "SELECT id, category, description, status, created_at, completed_at " +
                 "FROM maintenance_requests WHERE requester_id = ? ORDER BY created_at DESC";

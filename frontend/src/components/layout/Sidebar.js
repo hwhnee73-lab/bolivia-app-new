@@ -20,6 +20,8 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/admin/dashboard', label: '관리자 대시보드', icon: '📊' },
     { path: '/admin/billing', label: '일괄 청구', icon: '📋' },
     { path: '/admin/reports', label: '재무 리포트', icon: '📈' },
+    { path: '/admin/finance-reports-ui', label: '재무 리포트(UI)', icon: '📊' },
+    { path: '/admin/reports-kr', label: '보고서(UI‑KR)', icon: '📑' },
     { path: '/admin/users', label: '사용자 관리', icon: '👥' },
     { path: '/admin/users/bulk', label: '사용자 일괄등록', icon: '🗂️' },
   ];

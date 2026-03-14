@@ -66,6 +66,9 @@ public class BillAdminService {
         PREVIEW_CACHE.entrySet().removeIf(e -> now - e.getValue().createdAt > TTL_MILLIS);
     }
 
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+    private final org.springframework.transaction.support.TransactionTemplate transactionTemplate;
+
     public com.example.bolivia.dto.BillAdminDto.BatchConfirmResult confirmBatch(String tokenKey) {
         cleanupCache();
         CachedPreview cached = PREVIEW_CACHE.remove(tokenKey);
@@ -76,13 +79,65 @@ public class BillAdminService {
         int total = cached.rows().size();
         int upserted = 0;
         int skipped = 0;
+        
         for (com.example.bolivia.dto.BillAdminDto.BatchRowPreview r : cached.rows()) {
-            if (r.isValid()) upserted++; else skipped++;
+            if (!r.isValid()) {
+                skipped++;
+                continue;
+            }
+            try {
+                transactionTemplate.execute(status -> {
+                    upsertBill(r);
+                    return null;
+                });
+                upserted++;
+            } catch (Exception e) {
+                skipped++;
+            }
         }
 
-        // Note: Persisting to DB is intentionally omitted here. In production,
-        // this is where you would upsert into `bills` and possibly `bill_items`.
         return new com.example.bolivia.dto.BillAdminDto.BatchConfirmResult(tokenKey, total, upserted, skipped);
+    }
+
+    private void upsertBill(BillAdminDto.BatchRowPreview r) {
+        // Find household
+        List<Long> households = jdbcTemplate.query(
+                "SELECT id FROM households WHERE building_number = ? AND unit_number = ?",
+                (rs, rn) -> rs.getLong(1), r.getBuilding_number(), r.getUnit_number()
+        );
+        Long householdId;
+        if (households.isEmpty()) {
+            // Create household if it doesn't exist
+            jdbcTemplate.update(
+                "INSERT INTO households (building_number, unit_number, created_at, updated_at) VALUES (?,?,NOW(),NOW())",
+                r.getBuilding_number(), r.getUnit_number()
+            );
+            householdId = jdbcTemplate.queryForObject(
+                "SELECT LAST_INSERT_ID()", Long.class
+            );
+        } else {
+            householdId = households.get(0);
+        }
+
+        // Check if bill already exists for this household and month
+        List<Long> existingBills = jdbcTemplate.query(
+                "SELECT id FROM bills WHERE household_id = ? AND bill_month = ?",
+                (rs, rn) -> rs.getLong(1), householdId, r.getBill_month()
+        );
+
+        if (existingBills.isEmpty()) {
+            // Insert new bill
+            jdbcTemplate.update(
+                "INSERT INTO bills (household_id, bill_month, bill_date, due_date, total_amount, status, created_at, updated_at) VALUES (?, ?, NOW(), ?, ?, ?, NOW(), NOW())",
+                householdId, r.getBill_month(), java.sql.Date.valueOf(LocalDate.parse(r.getDue_date())), r.getTotal_amount(), r.getStatus()
+            );
+        } else {
+            // Update existing bill
+            jdbcTemplate.update(
+                "UPDATE bills SET due_date = ?, total_amount = ?, status = ?, updated_at = NOW() WHERE id = ?",
+                java.sql.Date.valueOf(LocalDate.parse(r.getDue_date())), r.getTotal_amount(), r.getStatus(), existingBills.get(0)
+            );
+        }
     }
 
     private List<BillAdminDto.BatchRowPreview> parseCsv(InputStream in) throws Exception {

@@ -27,63 +27,36 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest,
                                                 HttpServletResponse response) {
-        try {
-            LoginResponse loginResponse = authService.login(loginRequest, response);
-            return ResponseEntity.ok(loginResponse);
-        } catch (Exception e) {
-            log.error("Login failed: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(
-                    LoginResponse.builder()
-                            .message("Login failed: " + e.getMessage())
-                            .build()
-            );
-        }
+        LoginResponse loginResponse = authService.login(loginRequest, response);
+        return ResponseEntity.ok(loginResponse);
     }
     
     @PostMapping("/refresh")
     public ResponseEntity<LoginResponse> refreshToken(HttpServletRequest request) {
-        try {
-            // Get refresh token from cookie
-            String refreshToken = null;
-            if (request.getCookies() != null) {
-                for (Cookie cookie : request.getCookies()) {
-                    if ("refreshToken".equals(cookie.getName())) {
-                        refreshToken = cookie.getValue();
-                        break;
-                    }
+        // Get refresh token from cookie
+        String refreshToken = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                    break;
                 }
             }
-            
-            if (refreshToken == null) {
-                return ResponseEntity.badRequest().body(
-                        LoginResponse.builder()
-                                .message("Refresh token not found")
-                                .build()
-                );
-            }
-            
-            LoginResponse response = authService.refreshToken(refreshToken);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("Token refresh failed: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(
-                    LoginResponse.builder()
-                            .message("Token refresh failed: " + e.getMessage())
-                            .build()
-            );
         }
+        
+        if (refreshToken == null) {
+            throw new RuntimeException("Refresh token not found");
+        }
+        
+        LoginResponse response = authService.refreshToken(refreshToken);
+        return ResponseEntity.ok(response);
     }
     
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@AuthenticationPrincipal UserDetails userDetails,
                                      HttpServletResponse response) {
-        try {
-            authService.logout(userDetails.getUsername(), response);
-            return ResponseEntity.ok().body("Logged out successfully");
-        } catch (Exception e) {
-            log.error("Logout failed: {}", e.getMessage());
-            return ResponseEntity.badRequest().body("Logout failed: " + e.getMessage());
-        }
+        authService.logout(userDetails.getUsername(), response);
+        return ResponseEntity.ok().body("Logged out successfully");
     }
     
     @GetMapping("/me")

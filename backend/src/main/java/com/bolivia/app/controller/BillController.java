@@ -40,8 +40,8 @@ public class BillController {
     
     @GetMapping("/overdue")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<BillDto>> getOverdueBills() {
-        List<BillDto> bills = billService.getOverdueBills();
+    public ResponseEntity<Page<BillDto>> getOverdueBills(Pageable pageable) {
+        Page<BillDto> bills = billService.getOverdueBills(pageable);
         return ResponseEntity.ok(bills);
     }
     

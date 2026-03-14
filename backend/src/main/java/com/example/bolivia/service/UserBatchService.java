@@ -26,6 +26,7 @@ public class UserBatchService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
+    private final org.springframework.transaction.support.TransactionTemplate transactionTemplate;
 
     private static final Map<String, CachedPreview> PREVIEW_CACHE = new ConcurrentHashMap<>();
     private static final long TTL_MILLIS = 15 * 60 * 1000L;
@@ -74,7 +75,11 @@ public class UserBatchService {
         for (UserBatchDto.BatchRowPreview r : cached.rows()) {
             if (!r.isValid()) { skipped++; continue; }
             try {
-                upsertOne(r);
+                // Wrapper in a localized programmatic transaction to ensure household/user are saved atomically per row
+                transactionTemplate.execute(status -> {
+                    upsertOne(r);
+                    return null;
+                });
                 upserted++;
             } catch (Exception e) {
                 // Avoid exposing PII or password in logs

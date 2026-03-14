@@ -7,7 +7,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { t } = useTranslation();
-  
+
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -31,7 +31,7 @@ const Login = () => {
 
     try {
       const result = await login(formData);
-      
+
       if (result && result.success) {
         navigate(result.user.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard');
       } else {
@@ -120,10 +120,37 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <p>테스트 계정:</p>
-          <p>관리자: admin@bolivia.com / Admin123!</p>
-          <p>주민: kim101@bolivia.com / User123!</p>
+        <div className="mt-6 bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm">
+          <h3 className="font-medium text-blue-800 mb-2 flex items-center">
+            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            테스트 계정 안내
+          </h3>
+          <ul className="space-y-2 text-blue-700">
+            <li className="flex justify-between items-center bg-white p-2 rounded border border-blue-50 hover:border-blue-300 cursor-pointer transition-colors"
+              onClick={() => setFormData({ ...formData, username: 'admin@bolivia.com', password: 'Admin123!' })}>
+              <div>
+                <span className="font-semibold block">시스템 관리자</span>
+                <span className="text-xs text-blue-500">클릭하여 입력 달기</span>
+              </div>
+              <div className="text-right">
+                <code className="block text-xs bg-gray-100 px-1 rounded">admin@bolivia.com</code>
+                <code className="block text-xs text-gray-500">Admin123!</code>
+              </div>
+            </li>
+            <li className="flex justify-between items-center bg-white p-2 rounded border border-blue-50 hover:border-blue-300 cursor-pointer transition-colors"
+              onClick={() => setFormData({ ...formData, username: 'kim101@bolivia.com', password: 'Admin123!' })}>
+              <div>
+                <span className="font-semibold block">일반 입주민</span>
+                <span className="text-xs text-blue-500">클릭하여 입력 달기</span>
+              </div>
+              <div className="text-right">
+                <code className="block text-xs bg-gray-100 px-1 rounded">kim101@bolivia.com</code>
+                <code className="block text-xs text-gray-500">Admin123!</code>
+              </div>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

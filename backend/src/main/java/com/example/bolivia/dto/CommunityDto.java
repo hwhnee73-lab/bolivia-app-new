@@ -1,30 +1,24 @@
 package com.example.bolivia.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.time.LocalDateTime;
 
 public class CommunityDto {
 
-    @Getter @Setter
-    @AllArgsConstructor
-    public static class PostInfo {
-        private Long id;
-        private String author_name;
-        private String category;
-        private String title;
-        private String content;
-        private LocalDateTime created_at;
-    }
+    public record PostInfo(
+            Long id,
+            String title,
+            String content,
+            String authorName,
+            LocalDateTime createdAt
+    ) {}
 
-    @Getter @Setter
-    @NoArgsConstructor
     public static class CreateRequest {
-        private String category;
         private String title;
         private String content;
+
+        public String getTitle() { return title; }
+        public void setTitle(String title) { this.title = title; }
+        public String getContent() { return content; }
+        public void setContent(String content) { this.content = content; }
     }
 }
