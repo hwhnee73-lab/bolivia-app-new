@@ -20,3 +20,34 @@ export const ANNOUNCEMENT_CATEGORIES = [
   { value: '행사', label: '🎉 행사' },
   { value: '기타', label: '📌 기타' },
 ];
+
+// 앱 네비게이션 및 콘텐츠 데이터
+export const CONTENT_DATA = {
+  resident: {
+    title: 'App para Residentes',
+    nav: [
+      { id: 'intro', name: 'Introducción' },
+      { id: 'auth', name: 'Iniciar Sesión' },
+      { id: 'dashboard', name: 'Panel Principal' },
+      { id: 'payment', name: 'Pagos y Facturación' },
+      { id: 'reservation', name: 'Reserva de Áreas Comunes' },
+      { id: 'maintenance', name: 'Mantenimiento' },
+      { id: 'community', name: 'Comunidad' },
+      { id: 'profile', name: 'Perfil y Configuración' },
+    ],
+  },
+  admin: {
+    title: 'App para Administradores',
+    nav: [
+      { id: 'intro', name: 'Introducción' },
+      { id: 'auth', name: 'Iniciar Sesión' },
+      { id: 'dashboard', name: 'Panel de Administrador' },
+      { id: 'user_management', name: 'Gestión de Usuarios' },
+      { id: 'resident_management', name: 'Gestión de Residentes y Unidades' },
+      { id: 'finance', name: 'Finanzas e Informes' },
+      { id: 'task', name: 'Tareas y Mantenimiento' },
+      { id: 'reservation_approval', name: 'Aprobación de Reservas' },
+      { id: 'communication', name: '✨ Redactar Anuncios con IA' },
+    ],
+  },
+};

@@ -1,5 +1,5 @@
 import React, { useState, createContext, useContext } from 'react';
-import { CONSTANTS } from '../constants';
+import { CONTENT_DATA } from '../constants';
 
 // Crea un Context de React para la gestión del estado global.
 const AppContext = createContext(null);
@@ -68,7 +68,7 @@ export const AppProvider = ({ children }) => {
     isLoggedIn,
     currentUser,
     isMenuOpen,
-    contentData: CONSTANTS.CONTENT_DATA,
+    contentData: CONTENT_DATA,
     toast,
     navigateTo,
     handleLoginSuccess,
