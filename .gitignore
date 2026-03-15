@@ -36,3 +36,13 @@ Thumbs.db
 codex-fixes/
 codex-reviews/
 *.resolved
+
+# 임시/개인 파일
+memo.txt
+*.sql
+!db/init/*.sql
+tools/
+backup/
+agent_skills_guide.md
+software_architecture.md
+system_architecture.md
