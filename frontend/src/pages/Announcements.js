@@ -1,23 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAnnouncements } from '../services/announcementService';
+import { categoryColors, ANNOUNCEMENT_CATEGORIES } from '../constants';
 
-const CATEGORIES = [
-  { value: '', label: '전체' },
-  { value: '긴급', label: '🚨 긴급' },
-  { value: '일반', label: '📋 일반' },
-  { value: '정기점검', label: '🔧 정기점검' },
-  { value: '행사', label: '🎉 행사' },
-  { value: '기타', label: '📌 기타' },
-];
 
-const categoryColors = {
-  긴급: { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
-  일반: { bg: '#f0f9ff', color: '#0284c7', border: '#bae6fd' },
-  정기점검: { bg: '#fffbeb', color: '#d97706', border: '#fde68a' },
-  행사: { bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' },
-  기타: { bg: '#f5f3ff', color: '#7c3aed', border: '#ddd6fe' },
-};
 
 const styles = {
   container: {
@@ -192,7 +178,7 @@ const Announcements = () => {
 
       {/* 카테고리 필터 */}
       <div style={styles.filterRow}>
-        {CATEGORIES.map((cat) => (
+        {ANNOUNCEMENT_CATEGORIES.map((cat) => (
           <button
             key={cat.value}
             style={styles.filterBtn(category === cat.value)}

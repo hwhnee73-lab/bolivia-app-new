@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getAnnouncementDetail } from '../services/announcementService';
-
-const categoryColors = {
-  긴급: { bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
-  일반: { bg: '#f0f9ff', color: '#0284c7', border: '#bae6fd' },
-  정기점검: { bg: '#fffbeb', color: '#d97706', border: '#fde68a' },
-  행사: { bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' },
-  기타: { bg: '#f5f3ff', color: '#7c3aed', border: '#ddd6fe' },
-};
+import { categoryColors } from '../constants';
 
 const styles = {
   container: {

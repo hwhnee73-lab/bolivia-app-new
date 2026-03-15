@@ -4,6 +4,7 @@ import com.bolivia.app.dto.announcement.AnnouncementCreateRequest;
 import com.bolivia.app.dto.announcement.AnnouncementDto;
 import com.bolivia.app.entity.Announcement;
 import com.bolivia.app.entity.User;
+import com.bolivia.app.exception.ResourceNotFoundException;
 import com.bolivia.app.repository.AnnouncementRepository;
 import com.bolivia.app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,7 +40,7 @@ public class AnnouncementService {
      * 카테고리별 공지사항 조회
      */
     public Page<AnnouncementDto> getAnnouncementsByCategory(String category, Pageable pageable) {
-        Announcement.Category cat = Announcement.Category.valueOf(category);
+        Announcement.Category cat = parseCategory(category);
         return announcementRepository
                 .findByIsActiveTrueAndCategoryOrderByIsPinnedDescCreatedAtDesc(cat, pageable)
                 .map(AnnouncementDto::fromEntity);
@@ -65,14 +67,15 @@ public class AnnouncementService {
     }
 
     /**
-     * 공지사항 상세 조회 + 조회수 증가
+     * 공지사항 상세 조회 + 조회수 증가 (원자적 쿼리)
      */
     @Transactional
     public AnnouncementDto getAnnouncementDetail(Long id) {
         Announcement announcement = announcementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("공지사항을 찾을 수 없습니다: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("공지사항", id));
+        announcementRepository.incrementViewCount(id);
+        // 조회수 반영을 위해 +1 후 DTO 변환
         announcement.setViewCount(announcement.getViewCount() + 1);
-        announcementRepository.save(announcement);
         return AnnouncementDto.fromEntity(announcement);
     }
 
@@ -82,13 +85,13 @@ public class AnnouncementService {
     @Transactional
     public AnnouncementDto createAnnouncement(String authorEmail, AnnouncementCreateRequest request) {
         User author = userRepository.findByEmail(authorEmail)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + authorEmail));
+                .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다: " + authorEmail));
 
         Announcement announcement = Announcement.builder()
                 .author(author)
                 .title(request.getTitle())
                 .content(request.getContent())
-                .category(Announcement.Category.valueOf(
+                .category(parseCategory(
                         request.getCategory() != null ? request.getCategory() : "일반"))
                 .isPinned(request.getIsPinned() != null ? request.getIsPinned() : false)
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
@@ -108,12 +111,12 @@ public class AnnouncementService {
     @Transactional
     public AnnouncementDto updateAnnouncement(Long id, AnnouncementCreateRequest request) {
         Announcement announcement = announcementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("공지사항을 찾을 수 없습니다: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("공지사항", id));
 
         if (request.getTitle() != null) announcement.setTitle(request.getTitle());
         if (request.getContent() != null) announcement.setContent(request.getContent());
         if (request.getCategory() != null) {
-            announcement.setCategory(Announcement.Category.valueOf(request.getCategory()));
+            announcement.setCategory(parseCategory(request.getCategory()));
         }
         if (request.getIsPinned() != null) announcement.setIsPinned(request.getIsPinned());
         if (request.getIsActive() != null) announcement.setIsActive(request.getIsActive());
@@ -132,9 +135,22 @@ public class AnnouncementService {
     @Transactional
     public void deleteAnnouncement(Long id) {
         if (!announcementRepository.existsById(id)) {
-            throw new RuntimeException("공지사항을 찾을 수 없습니다: " + id);
+            throw new ResourceNotFoundException("공지사항", id);
         }
         announcementRepository.deleteById(id);
         log.info("공지사항 삭제: id={}", id);
+    }
+
+    /**
+     * 카테고리 문자열을 안전하게 파싱 (유효하지 않으면 IllegalArgumentException)
+     */
+    private Announcement.Category parseCategory(String category) {
+        try {
+            return Announcement.Category.valueOf(category);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(
+                    "유효하지 않은 카테고리입니다: " + category +
+                    ". 허용 값: " + Arrays.toString(Announcement.Category.values()));
+        }
     }
 }

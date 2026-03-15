@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.validation.Valid;
+
 @Slf4j
 @RestController
 @RequestMapping("/announcements")
@@ -76,7 +78,7 @@ public class AnnouncementController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AnnouncementDto> createAnnouncement(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody AnnouncementCreateRequest request) {
+            @RequestBody @Valid AnnouncementCreateRequest request) {
         AnnouncementDto created = announcementService.createAnnouncement(
                 userDetails.getUsername(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -89,7 +91,7 @@ public class AnnouncementController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AnnouncementDto> updateAnnouncement(
             @PathVariable Long id,
-            @RequestBody AnnouncementCreateRequest request) {
+            @RequestBody @Valid AnnouncementCreateRequest request) {
         return ResponseEntity.ok(announcementService.updateAnnouncement(id, request));
     }
 
