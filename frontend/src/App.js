@@ -16,6 +16,7 @@ import Payments from './pages/Payments';
 import Announcements from './pages/Announcements';
 import Maintenance from './pages/Maintenance';
 import Reservations from './pages/Reservations';
+import AnnouncementDetail from './pages/AnnouncementDetail';
 import Settings from './pages/Settings';
 
 // Admin Pages
@@ -65,6 +66,7 @@ function App() {
             <Route path="/bills/:id" element={<BillDetail />} />
             <Route path="/payments" element={<Payments />} />
             <Route path="/announcements" element={<Announcements />} />
+            <Route path="/announcements/:id" element={<AnnouncementDetail />} />
             <Route path="/maintenance" element={<Maintenance />} />
             <Route path="/reservations" element={<Reservations />} />
             <Route path="/settings" element={<Settings />} />
