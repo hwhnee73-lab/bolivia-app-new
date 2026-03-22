@@ -5,6 +5,8 @@ import com.bolivia.app.dto.auth.LoginResponse;
 import com.bolivia.app.dto.user.UserDto;
 import com.bolivia.app.entity.RefreshToken;
 import com.bolivia.app.entity.User;
+import com.bolivia.app.exception.InvalidTokenException;
+import com.bolivia.app.exception.ResourceNotFoundException;
 import com.bolivia.app.repository.RefreshTokenRepository;
 import com.bolivia.app.repository.UserRepository;
 import com.bolivia.app.security.JwtTokenProvider;
@@ -65,7 +67,7 @@ public class AuthService {
         // Resolve authenticated principal to the User entity reliably
         User principal = (User) authentication.getPrincipal();
         User user = userRepository.findById(principal.getId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", principal.getId()));
         
         // Update last login
         user.setLastLoginAt(LocalDateTime.now());
@@ -89,16 +91,16 @@ public class AuthService {
     @Transactional
     public LoginResponse refreshToken(String refreshToken) {
         if (refreshToken == null || !tokenProvider.validateToken(refreshToken)) {
-            throw new RuntimeException("Invalid refresh token");
+            throw new InvalidTokenException("Invalid refresh token");
         }
         
         // Get refresh token from database
         RefreshToken storedToken = refreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new RuntimeException("Refresh token not found"));
+                .orElseThrow(() -> new InvalidTokenException("Refresh token not found"));
         
         if (storedToken.isExpired()) {
             refreshTokenRepository.delete(storedToken);
-            throw new RuntimeException("Refresh token expired");
+            throw new InvalidTokenException("Refresh token expired");
         }
         
         User user = storedToken.getUser();
@@ -120,7 +122,7 @@ public class AuthService {
     @Transactional
     public void logout(String userEmail, HttpServletResponse response) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User"));
         
         // Delete all refresh tokens for this user
         refreshTokenRepository.deleteByUser(user);

@@ -4,6 +4,7 @@ import com.bolivia.app.dto.auth.LoginRequest;
 import com.bolivia.app.dto.auth.LoginResponse;
 import com.bolivia.app.dto.user.UserDto;
 import com.bolivia.app.entity.User;
+import com.bolivia.app.exception.InvalidTokenException;
 import com.bolivia.app.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,7 +46,7 @@ public class AuthController {
         }
         
         if (refreshToken == null) {
-            throw new RuntimeException("Refresh token not found");
+            throw new InvalidTokenException("Refresh token not found in cookie");
         }
         
         LoginResponse response = authService.refreshToken(refreshToken);

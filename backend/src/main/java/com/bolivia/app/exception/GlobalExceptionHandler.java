@@ -30,6 +30,30 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException ex, HttpServletRequest request) {
+        log.warn("Invalid token: {}", ex.getMessage());
+        ErrorResponse response = ErrorResponse.builder()
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateResourceException(DuplicateResourceException ex, HttpServletRequest request) {
+        log.warn("Duplicate resource: {}", ex.getMessage());
+        ErrorResponse response = ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .error(HttpStatus.CONFLICT.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
         log.warn("Invalid argument: {}", ex.getMessage());
@@ -45,28 +69,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
         log.error("Internal Server Error: ", ex);
-        // Identify some specific messages used in services
-        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-        String message = ex.getMessage();
-        
-        if (message != null) {
-            if (message.contains("User not found") || message.contains("Bill not found") || message.contains("not found")) {
-                status = HttpStatus.NOT_FOUND;
-            } else if (message.contains("Access denied") || message.contains("token")) {
-                status = HttpStatus.UNAUTHORIZED;
-            } else if (message.contains("Invalid") || message.contains("expired")) {
-                status = HttpStatus.BAD_REQUEST;
-            }
-        }
-        
         ErrorResponse response = ErrorResponse.builder()
-                .status(status.value())
-                .error(status.getReasonPhrase())
-                .message(message)
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(ex.getMessage())
                 .path(request.getRequestURI())
                 .build();
-                
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
