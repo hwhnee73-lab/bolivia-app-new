@@ -90,7 +90,7 @@ public class AuthService {
     
     @Transactional
     public LoginResponse refreshToken(String refreshToken) {
-        if (refreshToken == null || !tokenProvider.validateToken(refreshToken)) {
+        if (refreshToken == null || tokenProvider.validateAndGetClaims(refreshToken).isEmpty()) {
             throw new InvalidTokenException("Invalid refresh token");
         }
         

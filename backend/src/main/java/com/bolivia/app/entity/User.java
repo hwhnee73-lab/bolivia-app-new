@@ -27,15 +27,18 @@ public class User extends BaseEntity implements UserDetails {
     @Builder.Default
     private String aptCode = "BOLIVIA";
     
-    @Column(name = "dong", nullable = false, length = 10)
+    // DB: CHAR(10) — columnDefinition required to match exact type
+    @Column(name = "dong", nullable = false, columnDefinition = "char(10)")
     private String dong;
     
-    @Column(name = "ho", nullable = false, length = 10)
+    // DB: CHAR(10) — columnDefinition required to match exact type
+    @Column(name = "ho", nullable = false, columnDefinition = "char(10)")
     private String ho;
     
     @Column(name = "display_name", nullable = false, length = 100)
     private String displayName;
     
+    // DB: GENERATED ALWAYS AS — read-only
     @Column(name = "username", length = 64, insertable = false, updatable = false)
     private String username;
     
@@ -104,3 +107,4 @@ public class User extends BaseEntity implements UserDetails {
         PENDING, ACTIVE, LOCKED
     }
 }
+

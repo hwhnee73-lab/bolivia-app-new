@@ -2,6 +2,7 @@ package com.bolivia.app.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -26,8 +28,12 @@ public class JwtTokenProvider {
     @Value("${app.jwt.refresh-token-expiration}")
     private long refreshTokenExpiration;
     
-    private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    /** Cached signing key — created once at startup instead of on every call */
+    private SecretKey signingKey;
+    
+    @PostConstruct
+    void initSigningKey() {
+        this.signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
     
     public String generateAccessToken(Authentication authentication) {
@@ -44,7 +50,7 @@ public class JwtTokenProvider {
                 .claim("authorities", authorities)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .signWith(signingKey, SignatureAlgorithm.HS512)
                 .compact();
     }
     
@@ -56,27 +62,24 @@ public class JwtTokenProvider {
                 .setSubject(username)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .signWith(signingKey, SignatureAlgorithm.HS512)
                 .compact();
     }
     
-    public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        
-        return claims.getSubject();
-    }
-    
-    public boolean validateToken(String token) {
+    /**
+     * Validate the token AND return parsed Claims in one pass.
+     * Eliminates the 3x parsing overhead (validate → getUsername → getClaims).
+     *
+     * @return Optional.empty() if token is invalid/expired; Claims otherwise
+     */
+    public Optional<Claims> validateAndGetClaims(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(signingKey)
                     .build()
-                    .parseClaimsJws(token);
-            return true;
+                    .parseClaimsJws(token)
+                    .getBody();
+            return Optional.of(claims);
         } catch (io.jsonwebtoken.security.SecurityException ex) {
             log.error("Invalid JWT signature");
         } catch (MalformedJwtException ex) {
@@ -88,12 +91,31 @@ public class JwtTokenProvider {
         } catch (IllegalArgumentException ex) {
             log.error("JWT claims string is empty");
         }
-        return false;
+        return Optional.empty();
     }
     
+    /** @deprecated Use {@link #validateAndGetClaims(String)} for single-pass validation */
+    @Deprecated
+    public boolean validateToken(String token) {
+        return validateAndGetClaims(token).isPresent();
+    }
+    
+    /** @deprecated Use {@link #validateAndGetClaims(String)} for single-pass validation */
+    @Deprecated
+    public String getUsernameFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(signingKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+    
+    /** @deprecated Use {@link #validateAndGetClaims(String)} for single-pass validation */
+    @Deprecated
     public Claims getClaimsFromToken(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(signingKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

@@ -14,6 +14,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,6 +32,8 @@ class JwtTokenProviderTests {
         ReflectionTestUtils.setField(tokenProvider, "jwtSecret", SECRET);
         ReflectionTestUtils.setField(tokenProvider, "accessTokenExpiration", ACCESS_EXP);
         ReflectionTestUtils.setField(tokenProvider, "refreshTokenExpiration", REFRESH_EXP);
+        // Manually trigger @PostConstruct since we're not in a Spring context
+        tokenProvider.initSigningKey();
     }
 
     @Test
@@ -42,9 +45,11 @@ class JwtTokenProviderTests {
         );
 
         String token = tokenProvider.generateAccessToken(auth);
+        Optional<Claims> claims = tokenProvider.validateAndGetClaims(token);
 
         assertNotNull(token);
-        assertEquals("admin@example.com", tokenProvider.getUsernameFromToken(token));
+        assertTrue(claims.isPresent());
+        assertEquals("admin@example.com", claims.get().getSubject());
     }
 
     @Test
@@ -56,47 +61,51 @@ class JwtTokenProviderTests {
         );
 
         String token = tokenProvider.generateAccessToken(auth);
-        Claims claims = tokenProvider.getClaimsFromToken(token);
+        Optional<Claims> claims = tokenProvider.validateAndGetClaims(token);
 
-        assertEquals("ROLE_RESIDENT", claims.get("authorities", String.class));
+        assertTrue(claims.isPresent());
+        assertEquals("ROLE_RESIDENT", claims.get().get("authorities", String.class));
     }
 
     @Test
     @DisplayName("Refresh Token 생성 후 username 추출 가능")
     void generateRefreshToken_then_extractUsername() {
         String token = tokenProvider.generateRefreshToken("resident@example.com");
+        Optional<Claims> claims = tokenProvider.validateAndGetClaims(token);
 
         assertNotNull(token);
-        assertEquals("resident@example.com", tokenProvider.getUsernameFromToken(token));
+        assertTrue(claims.isPresent());
+        assertEquals("resident@example.com", claims.get().getSubject());
     }
 
     @Test
-    @DisplayName("유효한 토큰 → validateToken = true")
+    @DisplayName("유효한 토큰 → validateAndGetClaims = present")
     void validateToken_valid() {
         String token = tokenProvider.generateRefreshToken("user@test.com");
-        assertTrue(tokenProvider.validateToken(token));
+        assertTrue(tokenProvider.validateAndGetClaims(token).isPresent());
     }
 
     @Test
-    @DisplayName("변조된 토큰 → validateToken = false")
+    @DisplayName("변조된 토큰 → validateAndGetClaims = empty")
     void validateToken_tampered() {
         String token = tokenProvider.generateRefreshToken("user@test.com");
         String tampered = token.substring(0, token.length() - 5) + "XXXXX";
-        assertFalse(tokenProvider.validateToken(tampered));
+        assertTrue(tokenProvider.validateAndGetClaims(tampered).isEmpty());
     }
 
     @Test
-    @DisplayName("만료된 토큰 → validateToken = false")
+    @DisplayName("만료된 토큰 → validateAndGetClaims = empty")
     void validateToken_expired() {
         // 만료 시간을 -1ms로 설정하여 즉시 만료되는 토큰 생성
         ReflectionTestUtils.setField(tokenProvider, "refreshTokenExpiration", -1L);
+        tokenProvider.initSigningKey(); // Re-init after field change
         String token = tokenProvider.generateRefreshToken("expired@test.com");
 
-        assertFalse(tokenProvider.validateToken(token));
+        assertTrue(tokenProvider.validateAndGetClaims(token).isEmpty());
     }
 
     @Test
-    @DisplayName("다른 키로 서명한 토큰 → validateToken = false")
+    @DisplayName("다른 키로 서명한 토큰 → validateAndGetClaims = empty")
     void validateToken_wrongKey() {
         // 다른 키로 토큰 생성
         String otherSecret = "different-secret-key-that-is-also-long-enough-for-hs512-algorithm-at-least-64-bytes-for-testing";
@@ -107,6 +116,7 @@ class JwtTokenProviderTests {
                 .signWith(otherKey)
                 .compact();
 
-        assertFalse(tokenProvider.validateToken(token));
+        assertTrue(tokenProvider.validateAndGetClaims(token).isEmpty());
     }
 }
+

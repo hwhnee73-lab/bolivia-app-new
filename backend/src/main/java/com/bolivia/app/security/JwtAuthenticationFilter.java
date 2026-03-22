@@ -1,5 +1,6 @@
 package com.bolivia.app.security;
 
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,8 +18,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,21 +39,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
             
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String username = tokenProvider.getUsernameFromToken(jwt);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if (StringUtils.hasText(jwt)) {
+                // Single-pass: validate + parse claims in one call
+                Optional<Claims> optClaims = tokenProvider.validateAndGetClaims(jwt);
                 
-                // Get authorities from JWT claims
-                String authorities = tokenProvider.getClaimsFromToken(jwt).get("authorities", String.class);
-                List<SimpleGrantedAuthority> grantedAuthorities = Arrays.stream(authorities.split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
-                
-                UsernamePasswordAuthenticationToken authentication = 
-                        new UsernamePasswordAuthenticationToken(userDetails, null, grantedAuthorities);
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                if (optClaims.isPresent()) {
+                    Claims claims = optClaims.get();
+                    String username = claims.getSubject();
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    
+                    // Get authorities from JWT claims with null-safety
+                    List<SimpleGrantedAuthority> grantedAuthorities;
+                    String authorities = claims.get("authorities", String.class);
+                    
+                    if (authorities != null && !authorities.isBlank()) {
+                        grantedAuthorities = Arrays.stream(authorities.split(","))
+                                .map(SimpleGrantedAuthority::new)
+                                .collect(Collectors.toList());
+                    } else {
+                        // Fallback: use authorities from UserDetails (DB)
+                        grantedAuthorities = new ArrayList<>(userDetails.getAuthorities().stream()
+                                .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
+                                .toList());
+                    }
+                    
+                    UsernamePasswordAuthenticationToken authentication = 
+                            new UsernamePasswordAuthenticationToken(userDetails, null, grantedAuthorities);
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         } catch (Exception ex) {
             log.error("Could not set user authentication in security context", ex);
@@ -66,4 +84,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         return null;
     }
-}
+}

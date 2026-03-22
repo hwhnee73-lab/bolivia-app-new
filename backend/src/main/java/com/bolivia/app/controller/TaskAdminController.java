@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/tasks")
+@RequestMapping("/admin/tasks")
 public class TaskAdminController {
 
     private final TaskAdminService taskAdminService;
